@@ -3,10 +3,12 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
-if !exists(':JumpAnnotation')
-	command! JumpAnnotation call annotation#jump()
-endif
+let s:V = vital#vital#new()
 
-" test
+" Link jump
+function! annotation#jump() abort "{{{1
+endfunction
+" }}}
+
 let &cpo = s:save_cpo
 unlet s:save_cpo
