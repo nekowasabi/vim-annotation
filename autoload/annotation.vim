@@ -33,8 +33,10 @@ function! annotation#refer() abort "{{{1
 
 	" 2以上: 候補ダイアログ後jump
 	if len(l:json['annotations']) > 1
-		let candidate_annotation = annotation#select(l:json['annotations'][0])
-		call annotation#open(l:json['annotations'][0])
+		let num = input(annotation#make_candidate_text(l:json['annotations']).'Select annotation: ')
+		
+		" let candidate_annotation = annotation#select(l:json['annotations'][0])
+		" call annotation#open(l:json['annotations'][0])
 	endif
 
 	return
@@ -52,6 +54,18 @@ function! annotation#refer() abort "{{{1
   " execute l:elm.line
 endfunction
 " }}}
+
+function! annotation#make_candidate_text(json) abort "{{{1
+	let l:word = ''
+	let l:candidate_number = 0
+	for annotation_setting in a:json
+		let l:word = l:word . l:candidate_number . '.' . annotation_setting['title']."\n"
+		let l:candidate_number += 1
+	endfor
+
+	return l:word
+endfunction
+" }}}1
 
 function! annotation#open(json) abort "{{{1
 	" ファイルパスがあればジャンプ
