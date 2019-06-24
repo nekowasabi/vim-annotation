@@ -4,7 +4,11 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 let s:V = vital#vital#new()
-let s:file_name = fnamemodify(expand('%:p'), ":t")
+" win
+" let s:file_name = fnamemodify(expand('%:p'), ":t")
+" linux
+let s:file_name = fnamemodify(expand('%'), ":t")
+
 let s:json_path = g:annotation_cache_path. s:file_name . '.json'
 
 " Link jump
