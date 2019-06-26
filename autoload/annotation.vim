@@ -125,13 +125,15 @@ function! annotation#add() abort "{{{1
 	if filereadable(s:json_path)
 		let l:file_json = json_decode(readfile(s:json_path)[0])
 	else
-		le999t l:file_json = {'annotations': []}
+		let l:file_json = {'annotations': []}
 	endif
 
   " memoの場合
   " 専用バッファ分割
   execute "sp +buffer annotation"
-  " バッファローカルな設定をする
+  call s:set_scratch_buffer()
+  
+  " jsonに入る情報をバッファに入れる
 
   " リンクの場合
 	" let l:title = input('Annotation title :', s:get_visual_text()) 
@@ -147,6 +149,15 @@ function! annotation#add() abort "{{{1
   " call writefile([l:file_json], s:json_path)
 endfunction
 " }}}1
+
+
+function! s:set_scratch_buffer()
+  setlocal bufhidden=wipe
+  setlocal noswapfile
+  setlocal buflisted
+  setlocal filetype=markdown
+endfunction
+
 
 "ビジュアルモードで選択中のテクストを取得する {{{
 function! s:get_visual_text()

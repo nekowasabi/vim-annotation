@@ -11,8 +11,5 @@ if !exists(':EditAnnotation')
 	command! -range EditAnnotation call annotation#edit()
 endif
 
-
-
-" test
 let &cpo = s:save_cpo
 unlet s:save_cpo
