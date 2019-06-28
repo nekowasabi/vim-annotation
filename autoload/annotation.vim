@@ -141,6 +141,7 @@ function! annotation#add() abort "{{{1
   silent new
   silent file `='__THINCA_IS_GREAT__'`
   execute ":normal a" . 'nolifeking'
+  au! BufWriteCmd <buffer> call <SID>save_to_json()
 
   " " 元バッファの位置に戻るコード
   " try
@@ -165,6 +166,9 @@ function! annotation#add() abort "{{{1
 endfunction
 " }}}1
 
+function! s:save_to_json() abort
+  echo "ok"
+endfunction
 
 function! s:set_scratch_buffer()
   setlocal bufhidden=wipe
