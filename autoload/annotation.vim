@@ -130,8 +130,23 @@ function! annotation#add() abort "{{{1
 
   " memoの場合
   " 専用バッファ分割
-  execute "sp +buffer annotation"
-  call s:set_scratch_buffer()
+  " execute "new +buffer annotation"
+  " call s:set_scratch_buffer()
+  " call append(line('.'), 'nolifeking')
+
+  let l:wid = bufwinnr(bufnr('__THINCA_IS_GREAT__'))
+  if l:wid != -1
+    return
+  endif
+  silent new
+  silent file `='__THINCA_IS_GREAT__'`
+  execute ":normal a" . 'nolifeking'
+
+  " " 元バッファの位置に戻るコード
+  " try
+  " finally
+  "   exe l:wid 'wincmd w'
+  " endtry
   
   " jsonに入る情報をバッファに入れる
 
