@@ -12,7 +12,6 @@ endif
 
 let s:json_path = g:annotation_cache_path. s:file_name . '.json'
 
-" Link jump
 function! annotation#refer() abort "{{{1
 
 	if filereadable(s:json_path)
@@ -95,7 +94,6 @@ function! annotation#jump(json) abort "{{{1
 endfunction
 " }}}
 
-" Link edit
 function! annotation#edit() abort "{{{1
 	" ファイルがないときは追加
   if !filereadable(g:annotation_cache_path. expand('%') .'.json')
@@ -117,7 +115,6 @@ function! annotation#edit() abort "{{{1
 	" call add(l:file_json['annotations'], l:annotation)
   " let l:file_json = json_encode(l:file_json)
   "
-  " call writefile([l:file_json], 'c:/takeda/aaa.txt')
 endfunction
 " }}}
 
@@ -128,19 +125,22 @@ function! annotation#add() abort "{{{1
 		let l:file_json = {'annotations': []}
 	endif
 
+	let l:full_path = expand("%:p")
+  let l:title = s:get_visual_text()
+
   " memoの場合
   " 専用バッファ分割
   " execute "new +buffer annotation"
   " call s:set_scratch_buffer()
   " call append(line('.'), 'nolifeking')
 
-  let l:wid = bufwinnr(bufnr('__THINCA_IS_GREAT__'))
+  let l:wid = bufwinnr(bufnr('__annotation__'))
   if l:wid != -1
     return
   endif
   silent new
-  silent file `='__THINCA_IS_GREAT__'`
-  execute ":normal a" . 'nolifeking'
+  silent file `='__annotation__'`
+  call <SID>set_edit_template(l:title, l:full_path)
   au! BufWriteCmd <buffer> call <SID>save_to_json()
 
   " " 元バッファの位置に戻るコード
@@ -166,8 +166,17 @@ function! annotation#add() abort "{{{1
 endfunction
 " }}}1
 
+function! s:set_edit_template(title, full_path) abort
+  let l:title = 'title: '.a:title
+  execute ":normal a" . l:title
+  let l:path = 'path: '.a:full_path
+  execute ":normal o" . l:path
+  execute ":normal o" . '---------'
+  execute ":normal o"
+  return
+endfunction
+
 function! s:save_to_json() abort
-  echo "ok"
 endfunction
 
 function! s:set_scratch_buffer()
