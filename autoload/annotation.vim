@@ -13,7 +13,6 @@ endif
 let s:json_path = g:annotation_cache_path. s:file_name . '.json'
 
 function! annotation#refer() abort "{{{1
-
 	if filereadable(s:json_path)
 		let l:json = json_decode(readfile(s:json_path)[0])
 	else
@@ -31,20 +30,17 @@ function! annotation#refer() abort "{{{1
 	endif
 
 	if len(l:json['annotations']) == 1
-		call annotation#open(l:json['annotations'][0])
+		call annotation#refer#open(l:json['annotations'][0])
 		return
 	endif
 
 	" 2以上: 候補ダイアログ後jump
 	if len(l:json['annotations']) > 1
-		let num = input(annotation#make_candidate_text(l:json['annotations']).'Select annotation: ')
-		
-		" let candidate_annotation = annotation#select(l:json['annotations'][0])
-		" call annotation#open(l:json['annotations'][0])
+		let l:num = input(annotation#make_candidate_text(l:json['annotations']).'Select annotation: ')
+		call annotation#refer#open(l:json['annotations'][l:num])
 	endif
 
 	return
-
   " let l:str = string(matchstr(getline('.'), '\v\[%<' . col('.') . 'c\[[^\]]{-}%>' . col('.') . 'c\]\]'))
   " let l:str = substitute(l:str, '[[', '', 'g')
   " let l:str = substitute(l:str, ']]', '', 'g')
@@ -71,19 +67,16 @@ function! annotation#make_candidate_text(json) abort "{{{1
 endfunction
 " }}}1
 
-function! annotation#open(json) abort "{{{1
-	" ファイルパスがあればジャンプ
-	if !empty(a:json['path'])
+function! annotation#refer#open(json) abort "{{{1
+	if !empty(a:json['line'])
 		call annotation#jump(a:json)
-		return
 	endif
 
-	" " メモがあれば注釈表示
-	" if exists(a:json.memo)
-	" 	annotation#show()
-	" endif
-  "
-	" return
+	if exists(a:json['annotation'])
+		call annotation#view()
+	endif
+
+	return
 endfunction
 " }}}
 
@@ -94,14 +87,27 @@ function! annotation#jump(json) abort "{{{1
 endfunction
 " }}}
 
-function! annotation#edit() abort "{{{1
+function! annotation#edit#annotation() abort "{{{1
 	" ファイルがないときは追加
   if !filereadable(g:annotation_cache_path. expand('%') .'.json')
-    call annotation#add()
+    call annotation#add#annotation()
+		return
+  endif
+
+  " 編集用ダイアログを表示
+  
+endfunction
+" }}}
+
+
+function! annotation#edit#link() abort "{{{1
+	" ファイルがないときは追加
+  if !filereadable(g:annotation_cache_path. expand('%') .'.json')
+    call annotation#add#annotation()
 		return
   endif
   
-  " jsonに同じタイトルがないときは追加
+  " 編集用ダイアログを表示
 
 	" ファイルがあるときはannotationに追記
 	" let l:file_json = json_decode(readfile(g:annotation_cache_path.'aaa.txt')[0])
@@ -118,21 +124,10 @@ function! annotation#edit() abort "{{{1
 endfunction
 " }}}
 
-function! annotation#add() abort "{{{1
-	if filereadable(s:json_path)
-		let l:file_json = json_decode(readfile(s:json_path)[0])
-	else
-		let l:file_json = {'annotations': []}
-	endif
 
+function! annotation#add#annotation() abort "{{{1
 	let l:full_path = expand("%:p")
   let l:title = s:get_visual_text()
-
-  " memoの場合
-  " 専用バッファ分割
-  " execute "new +buffer annotation"
-  " call s:set_scratch_buffer()
-  " call append(line('.'), 'nolifeking')
 
   let l:wid = bufwinnr(bufnr('__annotation__'))
   if l:wid != -1
@@ -140,31 +135,27 @@ function! annotation#add() abort "{{{1
   endif
   silent new
   silent file `='__annotation__'`
-  call <SID>set_edit_template(l:title, l:full_path)
-  au! BufWriteCmd <buffer> call <SID>save_to_json()
+  call <sid>set_edit_template(l:title, l:full_path)
+  au! bufwritecmd <buffer> call <sid>save_to_json()
 
-  " " 元バッファの位置に戻るコード
-  " try
-  " finally
-  "   exe l:wid 'wincmd w'
-  " endtry
-  
-  " jsonに入る情報をバッファに入れる
-
-  " リンクの場合
-	" let l:title = input('Annotation title :', s:get_visual_text()) 
-  "
-	" let l:line = line('.')
-	" let l:full_path = expand("%:p")
-  "
-  " let l:annotation = {'title': l:title, 'path': l:full_path, 'line': l:line}
-  "
-	" call add(l:file_json['annotations'], l:annotation)
-  " let l:file_json = json_encode(l:file_json)
-  "
-  " call writefile([l:file_json], s:json_path)
 endfunction
 " }}}1
+
+function! annotation#add#link() abort "{{{1
+	let l:full_path = expand("%:p")
+  let l:title = s:get_visual_text()
+
+  let l:wid = bufwinnr(bufnr('__link__'))
+  if l:wid != -1
+    return
+  endif
+  silent new
+  silent file `='__link__'`
+  call <sid>set_edit_template(l:title, l:full_path)
+  au! bufwritecmd <buffer> call <sid>save_to_json()
+endfunction
+" }}}1
+
 
 function! s:set_edit_template(title, full_path) abort
   let l:template = []
@@ -178,6 +169,34 @@ function! s:set_edit_template(title, full_path) abort
 endfunction
 
 function! s:save_to_json() abort
+  let l:title = s:get_title()
+  let l:path  = s:get_path()
+  let l:text  = s:get_annotation_text()
+
+  let l:annotation = {'title': l:title, 'path': l:path, 'annotation': l:text}
+
+	if filereadable(s:json_path)
+		let l:file_json = json_decode(readfile(s:json_path)[0])
+	else
+		let l:file_json = {'annotations': []}
+	endif
+
+	call add(l:file_json['annotations'], l:annotation)
+  let l:file_json = json_encode(l:file_json)
+
+  call writefile([l:file_json], s:json_path)
+endfunction
+
+function! s:get_title() abort
+  return substitute(getline(1), 'title: ', '', 'g')
+endfunction
+
+function! s:get_path() abort
+  return substitute(getline(2), 'path: ', '', 'g')
+endfunction
+ 
+function! s:get_annotation_text() abort
+  return join(getline(4, '$'), "\n")
 endfunction
 
 function! s:set_scratch_buffer()
@@ -186,7 +205,6 @@ function! s:set_scratch_buffer()
   setlocal buflisted
   setlocal filetype=markdown
 endfunction
-
 
 "ビジュアルモードで選択中のテクストを取得する {{{
 function! s:get_visual_text()
