@@ -167,12 +167,13 @@ endfunction
 " }}}1
 
 function! s:set_edit_template(title, full_path) abort
-  let l:title = 'title: '.a:title
-  execute ":normal a" . l:title
-  let l:path = 'path: '.a:full_path
-  execute ":normal o" . l:path
-  execute ":normal o" . '---------'
-  execute ":normal o"
+  let l:template = []
+
+  call add(l:template, 'title: '.a:title)
+  call add(l:template, 'path: '.a:full_path)
+  call add(l:template, '---------')
+
+  call setline(1, l:template)
   return
 endfunction
 
@@ -204,7 +205,7 @@ function! s:get_visual_text()
     silent normal gvy
     let selected = @@
     let @@ = tmp
-    return selected
+    return selected[0:-2]
   catch
     return ''
   endtry
