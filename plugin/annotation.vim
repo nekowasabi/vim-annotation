@@ -8,12 +8,11 @@ if !exists(':ReferAnnotation')
 endif
 
 if !exists(':EditAnnotation')
-	command! -range EditAnnotation call annotation#edit#annotation()
+	command! -range EditAnnotation call annotation#edit_annotation()
 endif
 
-
 if !exists(':EditLink')
-	command! -range EditLink call annotation#edit#link()
+	command! -range EditLink call annotation#edit_link()
 endif
 
 

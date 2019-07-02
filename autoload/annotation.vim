@@ -1,5 +1,5 @@
 scriptencoding utf-8
-" test
+
 let s:save_cpo = &cpo
 set cpo&vim
 
@@ -13,15 +13,16 @@ endif
 let s:json_path = g:annotation_cache_path. s:file_name . '.json'
 
 function! annotation#refer() abort "{{{1
-	if filereadable(s:json_path)
-		let l:json = json_decode(readfile(s:json_path)[0])
-	else
+  " check exists json
+  if !s:exists_json_file
 		echo "Annotation fils is nothing"
-		return
-	endif
+    return
+  endif
+
+  " routing jump or view
+  let l:json = json_decode(readfile(s:json_path)[0])
 
 	let l:line = getline('.')
-	call filter(l:json['annotations'], 'l:line =~ v:val.title')
 
 	" 候補チェック
 	if empty(l:json['annotations'])
@@ -30,14 +31,14 @@ function! annotation#refer() abort "{{{1
 	endif
 
 	if len(l:json['annotations']) == 1
-		call annotation#refer#open(l:json['annotations'][0])
+		call annotation#refer_open(l:json['annotations'][0])
 		return
 	endif
 
 	" 2以上: 候補ダイアログ後jump
 	if len(l:json['annotations']) > 1
 		let l:num = input(annotation#make_candidate_text(l:json['annotations']).'Select annotation: ')
-		call annotation#refer#open(l:json['annotations'][l:num])
+		call annotation#refer_open(l:json['annotations'][l:num])
 	endif
 
 	return
@@ -55,6 +56,19 @@ function! annotation#refer() abort "{{{1
 endfunction
 " }}}
 
+function! s:count_candidate(json) abort
+	call filter(a:json['annotations'], 'l:line =~ v:val.title')
+  return count(a:json)
+endfunction
+
+function! s:exists_json_file() abort
+	if filereadable(s:json_path)
+    return v:true
+	else
+		return v:false
+	endif
+endfunction
+
 function! annotation#make_candidate_text(json) abort "{{{1
 	let l:word = ''
 	let l:candidate_number = 0
@@ -67,7 +81,7 @@ function! annotation#make_candidate_text(json) abort "{{{1
 endfunction
 " }}}1
 
-function! annotation#refer#open(json) abort "{{{1
+function! annotation#refer_open(json) abort "{{{1
 	if !empty(a:json['line'])
 		call annotation#jump(a:json)
 	endif
@@ -87,10 +101,10 @@ function! annotation#jump(json) abort "{{{1
 endfunction
 " }}}
 
-function! annotation#edit#annotation() abort "{{{1
+function! annotation#edit_annotation() abort "{{{1
 	" ファイルがないときは追加
   if !filereadable(g:annotation_cache_path. expand('%') .'.json')
-    call annotation#add#annotation()
+    call annotation#add_annotation()
 		return
   endif
 
@@ -100,10 +114,10 @@ endfunction
 " }}}
 
 
-function! annotation#edit#link() abort "{{{1
+function! annotation#edit_link() abort "{{{1
 	" ファイルがないときは追加
   if !filereadable(g:annotation_cache_path. expand('%') .'.json')
-    call annotation#add#annotation()
+    call annotation#add_annotation()
 		return
   endif
   
@@ -125,7 +139,7 @@ endfunction
 " }}}
 
 
-function! annotation#add#annotation() abort "{{{1
+function! annotation#add_annotation() abort "{{{1
 	let l:full_path = expand("%:p")
   let l:title = s:get_visual_text()
 
@@ -141,7 +155,7 @@ function! annotation#add#annotation() abort "{{{1
 endfunction
 " }}}1
 
-function! annotation#add#link() abort "{{{1
+function! annotation#add_link() abort "{{{1
 	let l:full_path = expand("%:p")
   let l:title = s:get_visual_text()
 
