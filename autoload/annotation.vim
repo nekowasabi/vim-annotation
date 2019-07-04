@@ -221,7 +221,6 @@ endfunction
 function! s:get_edit_json() abort
   let l:title = s:get_visual_text()
   let l:json = s:get_annotation_for_edit(l:title)
-  
   return l:json
 endfunction
 
@@ -255,10 +254,19 @@ function! s:save_to_json(save_mode) abort
 		let l:file_json = {'annotations': []}
 	endif
 
-	call add(l:file_json['annotations'], l:annotation)
+	a:save_mode == 'add'
+		call add(l:file_json['annotations'], l:annotation)
+	else
+		let l:index = s:search_json_index(l:file_json, l:title)
+	endif
+
   let l:file_json = json_encode(l:file_json)
 
   call writefile([l:file_json], s:json_path)
+endfunction
+
+function! s:search_json_index(json, title) abort
+	" ループで回して、ヒットしたらreturnでインデックスを返す
 endfunction
 
 function! s:get_title() abort
