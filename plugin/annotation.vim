@@ -11,6 +11,7 @@ if !exists(':EditAnnotation')
 	command! -range EditAnnotation call annotation#open_dialog()
 endif
 
+"
 if !exists(':EditLink')
 	command! -range EditLink call annotation#edit_link()
 endif
