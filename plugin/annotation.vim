@@ -8,13 +8,12 @@ if !exists(':ReferAnnotation')
 endif
 
 if !exists(':EditAnnotation')
-	command! -range EditAnnotation call annotation#edit_annotation()
+	command! -range EditAnnotation call annotation#open_dialog()
 endif
 
 if !exists(':EditLink')
 	command! -range EditLink call annotation#edit_link()
 endif
-
 
 let &cpo = s:save_cpo
 unlet s:save_cpo

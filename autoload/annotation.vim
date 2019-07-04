@@ -14,7 +14,7 @@ let s:json_path = g:annotation_cache_path. s:file_name . '.json'
 
 function! annotation#refer() abort "{{{1
   " check exists json
-  if !s:exists_json_file
+  if !s:exists_json_file()
 		echo "Annotation fils is nothing"
     return
   endif
@@ -22,7 +22,6 @@ function! annotation#refer() abort "{{{1
   " routing jump or view
   let l:json = json_decode(readfile(s:json_path)[0])
 
-	let l:line = getline('.')
 
 	" 候補チェック
 	if empty(l:json['annotations'])
@@ -57,6 +56,7 @@ endfunction
 " }}}
 
 function! s:count_candidate(json) abort
+	let l:line = getline('.')
 	call filter(a:json['annotations'], 'l:line =~ v:val.title')
   return count(a:json)
 endfunction
@@ -101,27 +101,44 @@ function! annotation#jump(json) abort "{{{1
 endfunction
 " }}}
 
-function! annotation#edit_annotation() abort "{{{1
-	" ファイルがないときは追加
-  if !filereadable(g:annotation_cache_path. expand('%') .'.json')
-    call annotation#add_annotation()
+function! annotation#open_dialog() abort "{{{1
+  let l:is_file_readable = filereadable(g:annotation_cache_path. s:file_name .'.json')
+
+  if !l:is_file_readable
+    call annotation#open_buffer_add_annotation()
+		return
+  endif
+
+  let l:is_exists_title = s:search_annotation_title(s:get_visual_text())
+  if !l:is_exists_title
+    call annotation#open_buffer_add_annotation()
 		return
   endif
 
   " 編集用ダイアログを表示
-  
+  call annotation#open_buffer_edit_annotation()
 endfunction
 " }}}
 
+function! s:search_annotation_title(title) abort
+  let l:json = json_decode(readfile(s:json_path)[0])
+  call filter(l:json['annotations'], 'a:title == v:val.title')
+
+	if empty(l:json)
+    return v:false
+	else
+		return v:true
+	endif
+endfunction
 
 function! annotation#edit_link() abort "{{{1
 	" ファイルがないときは追加
   if !filereadable(g:annotation_cache_path. expand('%') .'.json')
-    call annotation#add_annotation()
+    call annotation#open_buffer_add_annotation()
 		return
   endif
   
-  " 編集用ダイアログを表示
+  " 編集用ダイアログを表示 {{{1
 
 	" ファイルがあるときはannotationに追記
 	" let l:file_json = json_decode(readfile(g:annotation_cache_path.'aaa.txt')[0])
@@ -134,12 +151,12 @@ function! annotation#edit_link() abort "{{{1
   "
 	" call add(l:file_json['annotations'], l:annotation)
   " let l:file_json = json_encode(l:file_json)
-  "
+  " }}}1
 endfunction
 " }}}
 
 
-function! annotation#add_annotation() abort "{{{1
+function! annotation#open_buffer_add_annotation() abort "{{{1
 	let l:full_path = expand("%:p")
   let l:title = s:get_visual_text()
 
@@ -149,9 +166,28 @@ function! annotation#add_annotation() abort "{{{1
   endif
   silent new
   silent file `='__annotation__'`
-  call <sid>set_edit_template(l:title, l:full_path)
-  au! bufwritecmd <buffer> call <sid>save_to_json()
+  call <sid>set_new_template(l:title, l:full_path)
+  au! bufwritecmd <buffer> call <sid>save_to_json('add')
 
+endfunction
+" }}}1
+
+
+function! annotation#open_buffer_edit_annotation() abort "{{{1
+  let l:wid = bufwinnr(bufnr('__annotation__'))
+  if l:wid != -1
+    return
+  endif
+
+  let l:json =  s:get_edit_json()
+  let l:template = s:set_edit_template(l:json)
+
+  silent new
+  silent file `='__annotation__'`
+
+  call setline(1, l:template)
+
+  au! bufwritecmd <buffer> call <sid>save_to_json('update')
 endfunction
 " }}}1
 
@@ -165,13 +201,37 @@ function! annotation#add_link() abort "{{{1
   endif
   silent new
   silent file `='__link__'`
-  call <sid>set_edit_template(l:title, l:full_path)
+  call <sid>set_new_template(l:title, l:full_path)
   au! bufwritecmd <buffer> call <sid>save_to_json()
 endfunction
 " }}}1
 
 
-function! s:set_edit_template(title, full_path) abort
+function! s:set_edit_template(json) abort
+  let l:template = []
+  call add(l:template, 'title: '.a:json['annotations'][0].title)
+  call add(l:template, 'path: '.a:json['annotations'][0].path)
+  call add(l:template, '---------')
+  call add(l:template, a:json['annotations'][0].annotation)
+
+  return l:template
+endfunction
+
+
+function! s:get_edit_json() abort
+  let l:title = s:get_visual_text()
+  let l:json = s:get_annotation_for_edit(l:title)
+  
+  return l:json
+endfunction
+
+function! s:get_annotation_for_edit(title) abort
+  let l:json = json_decode(readfile(s:json_path)[0])
+  call filter(l:json['annotations'], 'a:title == v:val.title')
+  return l:json
+endfunction
+
+function! s:set_new_template(title, full_path) abort
   let l:template = []
 
   call add(l:template, 'title: '.a:title)
@@ -182,7 +242,7 @@ function! s:set_edit_template(title, full_path) abort
   return
 endfunction
 
-function! s:save_to_json() abort
+function! s:save_to_json(save_mode) abort
   let l:title = s:get_title()
   let l:path  = s:get_path()
   let l:text  = s:get_annotation_text()
