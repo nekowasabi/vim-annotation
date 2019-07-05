@@ -155,7 +155,6 @@ function! annotation#edit_link() abort "{{{1
 endfunction
 " }}}
 
-
 function! annotation#open_buffer_add_annotation() abort "{{{1
 	let l:full_path = expand("%:p")
   let l:title = s:get_visual_text()
@@ -171,7 +170,6 @@ function! annotation#open_buffer_add_annotation() abort "{{{1
 
 endfunction
 " }}}1
-
 
 function! annotation#open_buffer_edit_annotation() abort "{{{1
   let l:wid = bufwinnr(bufnr('__annotation__'))
@@ -246,18 +244,19 @@ function! s:save_to_json(save_mode) abort
   let l:path  = s:get_path()
   let l:text  = s:get_annotation_text()
 
-  let l:annotation = {'title': l:title, 'path': l:path, 'annotation': l:text}
-
 	if filereadable(s:json_path)
 		let l:file_json = json_decode(readfile(s:json_path)[0])
 	else
 		let l:file_json = {'annotations': []}
 	endif
 
-	a:save_mode == 'add'
-		call add(l:file_json['annotations'], l:annotation)
+	if a:save_mode == 'add'
+		call add(l:file_json['annotations'], {'title': l:title, 'path': l:path, 'annotation': l:text})
 	else
 		let l:index = s:search_json_index(l:file_json, l:title)
+    let l:file_json['annotations'][l:index].title = l:title
+    let l:file_json['annotations'][l:index].path = l:path
+    let l:file_json['annotations'][l:index].annotation = l:text
 	endif
 
   let l:file_json = json_encode(l:file_json)
@@ -266,7 +265,15 @@ function! s:save_to_json(save_mode) abort
 endfunction
 
 function! s:search_json_index(json, title) abort
-	" ループで回して、ヒットしたらreturnでインデックスを返す
+  let l:cnt = 0
+  for annotation in a:json['annotations']
+    if annotation.title == a:title
+      return l:cnt
+    endif
+    let l:cnt += 1
+  endfor
+
+  return v:false
 endfunction
 
 function! s:get_title() abort
