@@ -3,15 +3,6 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
-function! s:get_file_name() abort
-	" if has('unix')
-	" 	let s:file_name = 
-	" else
-	" 	let s:file_name = 
-	" endif
-	return has('unix') ? fnamemodify(expand('%'), ":t") : fnamemodify(expand('%:p'), ":t")
-endfunction
-
 function! annotation#refer() abort "{{{1
 	let s:json_path = g:annotation_cache_path. s:get_file_name() . '.json'
   if !s:exists_json_file()
@@ -262,6 +253,10 @@ function! s:set_scratch_buffer()
   setlocal noswapfile
   setlocal buflisted
   setlocal filetype=markdown
+endfunction
+
+function! s:get_file_name() abort
+	return has('unix') ? fnamemodify(expand('%'), ":t") : fnamemodify(expand('%:p'), ":t")
 endfunction
 
 "ビジュアルモードで選択中のテクストを取得する {{{
