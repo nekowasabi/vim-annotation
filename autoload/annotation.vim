@@ -6,7 +6,7 @@ set cpo&vim
 function! annotation#refer() abort "{{{1
 	let s:json_path = g:annotation_cache_path. s:get_file_name() . '.json'
   if !s:exists_json_file()
-		echo "Annotation fils is nothing"
+		echo "Annotation file is nothing"
     return
   endif
 
