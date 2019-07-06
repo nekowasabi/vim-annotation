@@ -11,6 +11,9 @@ function! annotation#refer() abort "{{{1
   endif
 
   let l:json = json_decode(readfile(s:json_path)[0])
+	let l:json_include_title = s:extract_title_in_linetext(l:json)
+	echo l:json_include_title
+	return
 
 	if empty(l:json['annotations'])
 		echo "Annotation is nothing."
@@ -30,6 +33,11 @@ function! annotation#refer() abort "{{{1
 	return
 endfunction
 " }}}
+
+function! s:extract_title_in_linetext(json) abort
+	let l:line = getline('.')
+	return filter(a:json['annotations'], 'l:line =~ v:val.title')	
+endfunction
 
 function! s:count_candidate(json) abort
 	let l:line = getline('.')
@@ -100,11 +108,7 @@ function! s:search_annotation_title(title) abort
   let l:json = json_decode(readfile(s:json_path)[0])
   call filter(l:json['annotations'], 'a:title == v:val.title')
 
-	if empty(l:json['annotations'])
-    return v:false
-	else
-		return v:true
-	endif
+	return empty(l:json['annotations']) ? v:false : v:true
 endfunction
 
 function! annotation#edit_link() abort "{{{1
