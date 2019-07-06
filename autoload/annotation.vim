@@ -3,15 +3,17 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
-if has('unix')
-  let s:file_name = fnamemodify(expand('%'), ":t")
-else
-  let s:file_name = fnamemodify(expand('%:p'), ":t")
-endif
-
-let s:json_path = g:annotation_cache_path. s:file_name . '.json'
+function! s:get_file_name() abort
+	" if has('unix')
+	" 	let s:file_name = 
+	" else
+	" 	let s:file_name = 
+	" endif
+	return has('unix') ? fnamemodify(expand('%'), ":t") : fnamemodify(expand('%:p'), ":t")
+endfunction
 
 function! annotation#refer() abort "{{{1
+	let s:json_path = g:annotation_cache_path. s:get_file_name() . '.json'
   if !s:exists_json_file()
 		echo "Annotation fils is nothing"
     return
@@ -85,7 +87,8 @@ endfunction
 " }}}
 
 function! annotation#open_dialog() abort "{{{1
-  let l:is_file_readable = filereadable(g:annotation_cache_path. s:file_name .'.json')
+	let s:json_path = g:annotation_cache_path. s:get_file_name() . '.json'
+  let l:is_file_readable = filereadable(g:annotation_cache_path. s:get_file_name() .'.json')
 
   if !l:is_file_readable
     call annotation#open_buffer_add_annotation()
@@ -195,7 +198,8 @@ endfunction
 function! s:set_new_template(title, full_path) abort
   let l:template = []
 
-  call add(l:template, 'title: '.a:title)
+	" substitute for Japanese text in windows.
+  call add(l:template, 'title: '. substitute(a:title, '縺', '', 'g'))
   call add(l:template, 'path: '.a:full_path)
   call add(l:template, '---------')
 
