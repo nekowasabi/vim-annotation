@@ -12,8 +12,6 @@ function! annotation#refer() abort "{{{1
 
   let l:json = json_decode(readfile(s:json_path)[0])
 	let l:json_include_title = s:extract_title_in_linetext(l:json)
-	echo l:json_include_title
-	return
 
 	if empty(l:json['annotations'])
 		echo "Annotation is nothing."
@@ -66,17 +64,48 @@ endfunction
 " }}}1
 
 function! annotation#refer_open(json) abort "{{{1
-	if !empty(a:json['line'])
-		call annotation#jump(a:json)
-	endif
-
-	if exists(a:json['annotation'])
-		call annotation#view()
+	" if !empty(a:json['line'])
+	" 	call annotation#jump(a:json)
+	" endif
+	if a:json.annotation != ""
+		call annotation#view(a:json)
 	endif
 
 	return
 endfunction
 " }}}
+
+function! annotation#view(json) abort
+  let l:wid = bufwinnr(bufnr('__view__'))
+  if l:wid != -1
+    return
+  endif
+  silent new
+  silent file `='__view__'`
+  call <SID>set_view_template(a:json)
+  call <SID>set_view_buffer()
+
+endfunction
+
+function! s:set_view_buffer()
+  setlocal ro
+  setlocal filetype=markdown
+endfunction
+
+
+function! s:set_view_template(json) abort
+  let l:template = []
+
+	" substitute for Japanese text in windows.
+  call add(l:template, 'title: '. substitute(a:json.title, '縺', '', 'g'))
+  call add(l:template, 'path: '.a:json.path)
+  call add(l:template, '---------')
+  call add(l:template, a:json.annotation)
+
+  call setline(1, l:template)
+  return
+endfunction
+
 
 function! annotation#jump(json) abort "{{{1
 	execute ":e ".a:json['path']
