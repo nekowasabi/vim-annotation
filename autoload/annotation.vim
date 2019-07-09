@@ -30,7 +30,7 @@ function! annotation#refer() abort "{{{1
 
   return
 endfunction
-" }}}
+" }}}1
 
 function! annotation#refer_open(json) abort "{{{1
   if a:json.annotation != ""
