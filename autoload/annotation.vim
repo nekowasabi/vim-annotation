@@ -3,15 +3,13 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
-
-function! annotation#test() abort
+function! annotation#colorize() abort
   augroup annotation_highlight
     au!
     exe 'au BufWinEnter * syn match AnnotationHighlight /\v<(' . join(get(g:,'annotation_keywords', ['ワロス', '直前', '直後']), '|') . ')>/ containedin=ALL'
   augroup END
   hi def link AnnotationHighlight phpConstant
 endfunction
-
 
 function! annotation#refer() abort "{{{1
   let s:json_path = g:annotation_cache_path. s:get_file_name() . '.json'
@@ -138,6 +136,14 @@ function! annotation#add_link() abort "{{{1
   au! bufwritecmd <buffer> call <sid>save_to_json()
 endfunction
 " }}}1
+
+function! annotation#edit_link() abort "{{{1
+  if !filereadable(g:annotation_cache_path. expand('%') .'.json')
+    call annotation#open_buffer_add_annotation()
+    return
+  endif
+endfunction
+" }}}
 
 function! s:set_edit_template(json) abort
   let l:template = []
@@ -290,14 +296,6 @@ function! s:search_annotation_title(title) abort
 
   return empty(l:json['annotations']) ? v:false : v:true
 endfunction
-
-function! annotation#edit_link() abort "{{{1
-  if !filereadable(g:annotation_cache_path. expand('%') .'.json')
-    call annotation#open_buffer_add_annotation()
-    return
-  endif
-endfunction
-" }}}
 
 
 "ビジュアルモードで選択中のテクストを取得する {{{
