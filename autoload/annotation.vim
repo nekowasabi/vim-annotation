@@ -41,7 +41,7 @@ function! annotation#refer_open(json) abort "{{{1
 endfunction
 " }}}
 
-function! annotation#view(json) abort
+function! annotation#view(json) abort "{{{1 
   let l:wid = bufwinnr(bufnr('__view__'))
   if l:wid != -1
     return
@@ -52,7 +52,7 @@ function! annotation#view(json) abort
   call <SID>set_view_buffer()
 
 endfunction
-
+" }}}1
 
 function! annotation#jump(json) abort "{{{1
   execute ":e ".a:json['path']
