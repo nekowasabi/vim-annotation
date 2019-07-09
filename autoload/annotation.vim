@@ -3,6 +3,16 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
+
+function! annotation#test() abort
+  augroup annotation_highlight
+    au!
+    exe 'au BufWinEnter * syn match AnnotationHighlight /\v<(' . join(get(g:,'annotation_keywords', ['ワロス', '直前', '直後']), '|') . ')>/ containedin=ALL'
+  augroup END
+  hi def link AnnotationHighlight phpConstant
+endfunction
+
+
 function! annotation#refer() abort "{{{1
   let s:json_path = g:annotation_cache_path. s:get_file_name() . '.json'
   if !s:exists_json_file()
@@ -265,7 +275,7 @@ function! s:make_candidate_text(json) abort "{{{1
   let l:word = ''
   let l:candidate_number = 0
   for annotation_setting in a:json
-    let l:word = l:word . l:candidate_number . '.' . annotation_setting['title']."\n"
+    let l:word = l:word . l:candidate_number . '.' . annotation_setting['title']. '  '. annotation_setting['path'] . "\n"
     let l:candidate_number += 1
   endfor
 

@@ -3,6 +3,7 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
+
 if !exists(':ReferAnnotation')
 	command! -range ReferAnnotation call annotation#refer()
 endif
