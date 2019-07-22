@@ -91,6 +91,8 @@ endfunction
 function! annotation#open_buffer_add_annotation() abort "{{{1
   let l:full_path = expand("%:p")
   let l:title = s:get_visual_text()
+  let l:row = line('.')
+  let l:col = col('.')
 
   let l:wid = bufwinnr(bufnr('__annotation__'))
   if l:wid != -1
@@ -98,7 +100,7 @@ function! annotation#open_buffer_add_annotation() abort "{{{1
   endif
   silent new
   silent file `='__annotation__'`
-  call <sid>set_new_template(l:title, l:full_path)
+  call <sid>set_new_template(l:title, l:full_path, l:row, l:col)
   au! bufwritecmd <buffer> call <sid>save_to_json('add')
 
 endfunction
@@ -149,6 +151,8 @@ function! s:set_edit_template(json) abort
   let l:template = []
   call add(l:template, 'title: '.a:json['annotations'][0].title)
   call add(l:template, 'path: '.a:json['annotations'][0].path)
+  call add(l:template, 'row: '.line('.'))
+  call add(l:template, 'col: '.line('.'))
   call add(l:template, '---------')
   call add(l:template, a:json['annotations'][0].annotation)
 
@@ -167,12 +171,14 @@ function! s:get_annotation_for_edit(title) abort
   return l:json
 endfunction
 
-function! s:set_new_template(title, full_path) abort
-  let l:template = []
+function! s:set_new_template(title, full_path, row, col) abort
 
   " substitute for Japanese text in windows.
+  let l:template = []
   call add(l:template, 'title: '. substitute(a:title, '縺', '', 'g'))
   call add(l:template, 'path: '.a:full_path)
+  call add(l:template, 'row: '.a:row)
+  call add(l:template, 'col: '.a:col)
   call add(l:template, '---------')
 
   call setline(1, l:template)
