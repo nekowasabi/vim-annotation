@@ -78,7 +78,7 @@ function! annotation#open_dialog() abort "{{{1
     return
   endif
 
-  let l:is_exists_title = annotation#search_title(s:get_visual_text())
+  let l:is_exists_title = annotation#extract_annotation_by_title(s:get_visual_text())
   if !l:is_exists_title
     call annotation#open_buffer_add_annotation()
     return
@@ -173,7 +173,7 @@ endfunction
 
 function! annotation#set_template_for_add_to(title, full_path, row, col) abort
 
-  " substitute for Japanese text in windows.
+  " substitute for Japanese text in Windows.
   let l:template = []
   call add(l:template, 'title: '. substitute(a:title, '縺', '', 'g'))
   call add(l:template, 'path: '.a:full_path)
@@ -188,6 +188,8 @@ endfunction
 function! annotation#save_to_json(save_mode) abort
   let l:title = annotation#get_title()
   let l:path  = annotation#get_path()
+	let l:row = annotation#get_row()
+	let l:col = annotation#get_col()
   let l:text  = annotation#get_annotation_text()
 
   if filereadable(s:json_path)
@@ -197,11 +199,13 @@ function! annotation#save_to_json(save_mode) abort
   endif
 
   if a:save_mode == 'add'
-    call add(l:file_json['annotations'], {'title': l:title, 'path': l:path, 'annotation': l:text})
+    call add(l:file_json['annotations'], {'title': l:title, 'path': l:path, 'row': l:row, 'col': l:col, 'annotation': l:text})
   else
     let l:index = annotation#search_json_index(l:file_json, l:title)
     let l:file_json['annotations'][l:index].title = l:title
     let l:file_json['annotations'][l:index].path = l:path
+    let l:file_json['annotations'][l:index].row = l:row
+    let l:file_json['annotations'][l:index].col = l:col
     let l:file_json['annotations'][l:index].annotation = l:text
   endif
 
@@ -231,8 +235,16 @@ function! annotation#get_path() abort
   return substitute(getline(2), 'path: ', '', 'g')
 endfunction
 
+function! annotation#get_row() abort
+  return substitute(getline(3), 'row: ', '', 'g')
+endfunction
+
+function! annotation#get_col() abort
+  return substitute(getline(4), 'col: ', '', 'g')
+endfunction
+
 function! annotation#get_annotation_text() abort
-  return join(getline(4, '$'), "\n")
+  return join(getline(6, '$'), "\n")
 endfunction
 
 function! s:set_scratch_buffer()
@@ -257,6 +269,8 @@ function! annotation#set_view_template(json) abort
   " substitute for Japanese text in windows.
   call add(l:template, 'title: '. substitute(a:json.title, '縺', '', 'g'))
   call add(l:template, 'path: '.a:json.path)
+  call add(l:template, 'row: '.a:json.row)
+  call add(l:template, 'col: '.a:json.col)
   call add(l:template, '---------')
   call add(l:template, a:json.annotation)
 
@@ -297,9 +311,9 @@ function! annotation#make_candidate_text(json) abort "{{{1
 endfunction
 " }}}1
 
-function! annotation#search_title(title) abort
+function! annotation#extract_annotation_by_title(title) abort
   let l:json = json_decode(readfile(s:json_path)[0])
-  call filter(l:json['annotations'], 'a:title == v:val.title) 
+  call filter(l:json['annotations'], 'a:title == v:val.title') 
 
   return empty(l:json['annotations']) ? v:false : v:true
 endfunction
