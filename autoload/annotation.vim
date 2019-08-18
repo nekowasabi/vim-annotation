@@ -91,6 +91,7 @@ endfunction
 function! annotation#open_buffer_add_annotation() abort "{{{1
   let l:full_path = expand("%:p")
   let l:title = s:get_visual_text()
+  echo l:title
   let l:row = line('.')
   let l:col = col('.')
 
@@ -115,10 +116,19 @@ function! annotation#open_buffer_edit_annotation() abort "{{{1
   let l:json =  annotation#get_json_for_edit()
   let l:template = annotation#set_edit_template(l:json)
 
+  let l:annotations = split(l:json['annotations'][0].annotation, "\r")
+
   silent new
   silent file `='__annotation__'`
+  call annotation#set_scratch_buffer()
 
   call setline(1, l:template)
+  call setline(6, l:annotations)
+
+  " TODO: substituteでうまく変換できないためバッファを書き換えている。修正したい
+  " if l:template[5] ~= "\"
+    " %s/\/\r
+  " endif
 
   au! bufwritecmd <buffer> call annotation#save_to_json('update')
 endfunction
@@ -149,12 +159,13 @@ endfunction
 
 function! annotation#set_edit_template(json) abort
   let l:template = []
+
   call add(l:template, 'title: '.a:json['annotations'][0].title)
   call add(l:template, 'path: '.a:json['annotations'][0].path)
   call add(l:template, 'row: '.line('.'))
   call add(l:template, 'col: '.line('.'))
   call add(l:template, '---------')
-  call add(l:template, a:json['annotations'][0].annotation)
+  " call add(l:template,  a:json['annotations'][0].annotation)
 
   return l:template
 endfunction
@@ -172,7 +183,6 @@ function! s:get_annotation_for_edit(title) abort
 endfunction
 
 function! annotation#set_template_for_add_to(title, full_path, row, col) abort
-
   " substitute for Japanese text in Windows.
   let l:template = []
   call add(l:template, 'title: '. substitute(a:title, '縺', '', 'g'))
@@ -244,14 +254,15 @@ function! annotation#get_col() abort
 endfunction
 
 function! annotation#get_annotation_text() abort
-  return join(getline(6, '$'), "\n")
+  return join(getline(6, "$"), "\r")
 endfunction
 
-function! s:set_scratch_buffer()
+function! annotation#set_scratch_buffer()
   setlocal bufhidden=wipe
   setlocal noswapfile
   setlocal buflisted
   setlocal filetype=markdown
+  set fenc=utf-8
 endfunction
 
 function! annotation#get_file_name() abort
@@ -335,7 +346,8 @@ function! s:get_visual_text()
     silent normal gvy
     let selected = @@
     let @@ = tmp
-    return selected[0:-2]
+    let splitted = split(selected, '\zs')
+    return join(splitted[0:-2], "")
   catch
     return ''
   endtry
