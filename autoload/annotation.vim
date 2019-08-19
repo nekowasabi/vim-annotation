@@ -57,8 +57,7 @@ function! annotation#view(json) abort "{{{1
   silent new
   silent file `='__view__'`
   call annotation#set_view_template(a:json)
-  call annotation#set_view_buffer()
-
+  call annotation#set_scratch_buffer()
 endfunction
 " }}}1
 
@@ -124,11 +123,6 @@ function! annotation#open_buffer_edit_annotation() abort "{{{1
 
   call setline(1, l:template)
   call setline(6, l:annotations)
-
-  " TODO: substituteでうまく変換できないためバッファを書き換えている。修正したい
-  " if l:template[5] ~= "\"
-    " %s/\/\r
-  " endif
 
   au! bufwritecmd <buffer> call annotation#save_to_json('update')
 endfunction
@@ -269,11 +263,6 @@ function! annotation#get_file_name() abort
   return has('unix') ? fnamemodify(expand('%'), ":t") : fnamemodify(expand('%:p'), ":t")
 endfunction
 
-function! annotation#set_view_buffer()
-  setlocal ro
-  setlocal filetype=markdown
-endfunction
-
 function! annotation#set_view_template(json) abort
   let l:template = []
 
@@ -283,9 +272,10 @@ function! annotation#set_view_template(json) abort
   call add(l:template, 'row: '.a:json.row)
   call add(l:template, 'col: '.a:json.col)
   call add(l:template, '---------')
-  call add(l:template, a:json.annotation)
+  let l:annotations = split(a:json.annotation, "\r")
 
   call setline(1, l:template)
+  call setline(6, l:annotations)
   return
 endfunction
 
