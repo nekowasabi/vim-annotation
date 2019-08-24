@@ -3,7 +3,14 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
+let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
+
 function! annotation#colorize() abort
+	" json取得
+	" ループで1つずつシンタックス設定
+		" 行と文字列から正規表現を作成 / \%23lで特定行の正規表現
+		" syntax matchとかで色つけ
+
   augroup annotation_highlight
     au!
     exe 'au BufWinEnter * syn match AnnotationHighlight /\v<(' . join(get(g:,'annotation_keywords', ['ワロス', '直前', '直後']), '|') . ')>/ containedin=ALL'
@@ -12,7 +19,6 @@ function! annotation#colorize() abort
 endfunction
 
 function! annotation#refer() abort "{{{1
-  let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
   if !annotation#exists_json_file()
     echo "Annotation file is none"
     return
@@ -124,11 +130,6 @@ function! annotation#open_buffer_edit_annotation() abort "{{{1
 
   call setline(1, l:template)
   call setline(6, l:annotations)
-
-  " TODO: substituteでうまく変換できないためバッファを書き換えている。修正したい
-  " if l:template[5] ~= "\"
-    " %s/\/\r
-  " endif
 
   au! bufwritecmd <buffer> call annotation#save_to_json('update')
 endfunction
