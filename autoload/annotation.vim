@@ -6,7 +6,11 @@ set cpo&vim
 let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
 
 function! annotation#colorize() abort
-	" json取得
+  if !annotation#exists_json_file()
+    return
+  endif
+
+  let l:json = json_decode(readfile(s:json_path)[0])
 	" ループで1つずつシンタックス設定
 		" 行と文字列から正規表現を作成 / \%23lで特定行の正規表現
 		" syntax matchとかで色つけ
