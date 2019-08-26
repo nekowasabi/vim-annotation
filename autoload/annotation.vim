@@ -11,9 +11,13 @@ function! annotation#colorize() abort
   endif
 
   let l:json = json_decode(readfile(s:json_path)[0])
+  echl l:json
 	" ループで1つずつシンタックス設定
-		" 行と文字列から正規表現を作成 / \%23lで特定行の正規表現
-		" syntax matchとかで色つけ
+  " for annotation in l:json
+  "     " 行と文字列から正規表現を作成 / \%23lで特定行の正規表現
+  "     echo annotation
+  "     " syntax matchとかで色つけ
+  " endfor
 
   augroup annotation_highlight
     au!
