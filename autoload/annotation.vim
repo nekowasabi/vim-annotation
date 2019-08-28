@@ -3,21 +3,21 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
-let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
 
 function! annotation#colorize() abort
+  let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
   if !annotation#exists_json_file()
     return
   endif
 
   let l:json = json_decode(readfile(s:json_path)[0])
-  echl l:json
 	" ループで1つずつシンタックス設定
-  " for annotation in l:json
-  "     " 行と文字列から正規表現を作成 / \%23lで特定行の正規表現
-  "     echo annotation
-  "     " syntax matchとかで色つけ
-  " endfor
+  for annotation in l:json['annotations']
+      " 行と文字列から正規表現を作成 / \%23lで特定行の正規表現
+      let regexp = '\%'.annotation.row.'l'.annotation.title
+      echo regexp
+      " syntax matchとかで色つけ
+  endfor
 
   augroup annotation_highlight
     au!
@@ -104,7 +104,6 @@ endfunction
 function! annotation#open_buffer_add_annotation() abort "{{{1
   let l:full_path = expand("%:p")
   let l:title = s:get_visual_text()
-  echo l:title
   let l:row = line('.')
   let l:col = col('.')
 
