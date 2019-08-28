@@ -5,29 +5,21 @@ set cpo&vim
 
 
 function! annotation#colorize() abort
-  let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
-  if !annotation#exists_json_file()
+  let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
+  if !annotation#exists_json_file(l:json_path)
     return
   endif
 
-  let l:json = json_decode(readfile(s:json_path)[0])
-	" ループで1つずつシンタックス設定
+  let l:json = json_decode(readfile(l:json_path)[0])
   for annotation in l:json['annotations']
-      " 行と文字列から正規表現を作成 / \%23lで特定行の正規表現
-      let regexp = '\%'.annotation.row.'l'.annotation.title
-      echo regexp
-      " syntax matchとかで色つけ
+      let l:regexp = '\%'.annotation.row.'l'.annotation.title
+      exe 'syn match String /'.l:regexp.'/'
   endfor
-
-  augroup annotation_highlight
-    au!
-    exe 'au BufWinEnter * syn match AnnotationHighlight /\v<(' . join(get(g:,'annotation_keywords', ['ワロス', '直前', '直後']), '|') . ')>/ containedin=ALL'
-  augroup END
-  hi def link AnnotationHighlight phpConstant
 endfunction
 
 function! annotation#refer() abort "{{{1
-  if !annotation#exists_json_file()
+  let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
+  if !annotation#exists_json_file(s:json_path)
     echo "Annotation file is none"
     return
   endif
@@ -172,7 +164,6 @@ function! annotation#set_edit_template(json) abort
   call add(l:template, 'row: '.line('.'))
   call add(l:template, 'col: '.line('.'))
   call add(l:template, '---------')
-  " call add(l:template,  a:json['annotations'][0].annotation)
 
   return l:template
 endfunction
@@ -304,8 +295,8 @@ function! s:count_candidate(json) abort
   return count(a:json)
 endfunction
 
-function! annotation#exists_json_file() abort
-  if filereadable(s:json_path)
+function! annotation#exists_json_file(json_path) abort
+  if filereadable(a:json_path)
     return v:true
   else
     return v:false
