@@ -13,7 +13,7 @@ function! annotation#colorize() abort
   let l:json = json_decode(readfile(l:json_path)[0])
   for annotation in l:json['annotations']
       let l:regexp = '\%'.annotation.row.'l'.annotation.title
-      exe 'syn match String /'.l:regexp.'/'
+      exe 'syn match AnnotationString /'.l:regexp.'/ containedin=ALL'
   endfor
 endfunction
 
