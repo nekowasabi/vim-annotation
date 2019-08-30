@@ -3,8 +3,7 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
-
-function! annotation#colorize() abort
+function! annotation#colorize() abort "{{{1
   let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
   if !annotation#exists_json_file(l:json_path)
     return
@@ -16,6 +15,7 @@ function! annotation#colorize() abort
       exe 'syn match AnnotationString /'.l:regexp.'/ containedin=ALL'
   endfor
 endfunction
+" }}}1
 
 function! annotation#refer() abort "{{{1
   let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
@@ -25,7 +25,7 @@ function! annotation#refer() abort "{{{1
   endif
 
   let l:json = json_decode(readfile(s:json_path)[0])
-  let l:json_include_title = annotation#extract_title_in_linetext(l:json)
+  let l:json_include_title = annotation#extract_title_by_annotation_settings(l:json)
 
   if empty(l:json['annotations'])
     echo "Annotation is none."
@@ -72,7 +72,7 @@ function! annotation#jump(json) abort "{{{1
   execute a:json['line']
   return
 endfunction
-" }}}
+" }}}1
 
 function! annotation#open_dialog() abort "{{{1
   let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
@@ -91,7 +91,7 @@ function! annotation#open_dialog() abort "{{{1
 
   call annotation#open_buffer_edit_annotation()
 endfunction
-" }}}
+" }}}1
 
 function! annotation#open_buffer_add_annotation() abort "{{{1
   let l:full_path = expand("%:p")
@@ -154,9 +154,9 @@ function! annotation#edit_link() abort "{{{1
     return
   endif
 endfunction
-" }}}
+" }}}1
 
-function! annotation#set_edit_template(json) abort
+function! annotation#set_edit_template(json) abort "{{{1
   let l:template = []
 
   call add(l:template, 'title: '.a:json['annotations'][0].title)
@@ -167,20 +167,23 @@ function! annotation#set_edit_template(json) abort
 
   return l:template
 endfunction
+" }}}1
 
-function! annotation#get_json_for_edit() abort
+function! annotation#get_json_for_edit() abort "{{{1
   let l:title = s:get_visual_text()
   let l:json = s:get_annotation_for_edit(l:title)
   return l:json
 endfunction
+" }}}1
 
-function! s:get_annotation_for_edit(title) abort
+function! s:get_annotation_for_edit(title) abort "{{{1
   let l:json = json_decode(readfile(s:json_path)[0])
   call filter(l:json['annotations'], 'a:title == v:val.title')
   return l:json
 endfunction
+" }}}1
 
-function! annotation#set_template_for_add_to(title, full_path, row, col) abort
+function! annotation#set_template_for_add_to(title, full_path, row, col) abort "{{{1
   " substitute for Japanese text in Windows.
   let l:template = []
   call add(l:template, 'title: '. substitute(a:title, '縺', '', 'g'))
@@ -192,8 +195,9 @@ function! annotation#set_template_for_add_to(title, full_path, row, col) abort
   call setline(1, l:template)
   return
 endfunction
+" }}}1
 
-function! annotation#save_to_json(save_mode) abort
+function! annotation#save_to_json(save_mode) abort "{{{1
   let l:title = annotation#get_title()
   let l:path  = annotation#get_path()
 	let l:row = annotation#get_row()
@@ -222,8 +226,9 @@ function! annotation#save_to_json(save_mode) abort
 
   echo "saved."
 endfunction
+" }}}1
 
-function! annotation#search_json_index(json, title) abort
+function! annotation#search_json_index(json, title) abort "{{{1
   let l:cnt = 0
   for annotation in a:json['annotations']
     if annotation.title == a:title
@@ -234,40 +239,48 @@ function! annotation#search_json_index(json, title) abort
 
   return v:false
 endfunction
+" }}}1
 
-function! annotation#get_title() abort
+function! annotation#get_title() abort "{{{1
   return substitute(getline(1), 'title: ', '', 'g')
 endfunction
+" }}}1
 
-function! annotation#get_path() abort
+function! annotation#get_path() abort "{{{1
   return substitute(getline(2), 'path: ', '', 'g')
 endfunction
+" }}}1
 
-function! annotation#get_row() abort
+function! annotation#get_row() abort "{{{1
   return substitute(getline(3), 'row: ', '', 'g')
 endfunction
+" }}}1
 
-function! annotation#get_col() abort
+function! annotation#get_col() abort "{{{1
   return substitute(getline(4), 'col: ', '', 'g')
 endfunction
+" }}}1
 
-function! annotation#get_annotation_text() abort
+function! annotation#get_annotation_text() abort "{{{1
   return join(getline(6, "$"), "\r")
 endfunction
+" }}}1
 
-function! annotation#set_scratch_buffer()
+function! annotation#set_scratch_buffer() "{{{1
   setlocal bufhidden=wipe
   setlocal noswapfile
   setlocal buflisted
   setlocal filetype=markdown
   set fenc=utf-8
 endfunction
+" }}}1
 
-function! annotation#get_file_name() abort
+function! annotation#get_file_name() abort "{{{1
   return has('unix') ? fnamemodify(expand('%'), ":t") : fnamemodify(expand('%:p'), ":t")
 endfunction
+" }}}1
 
-function! annotation#set_view_template(json) abort
+function! annotation#set_view_template(json) abort "{{{1
   let l:template = []
 
   " substitute for Japanese text in windows.
@@ -282,26 +295,23 @@ function! annotation#set_view_template(json) abort
   call setline(6, l:annotations)
   return
 endfunction
+" }}}1
 
-function! annotation#extract_title_in_linetext(json) abort
+function! annotation#extract_title_by_annotation_settings(json) abort "{{{1
   let l:line = getline('.')
-  let l:col = col('.')
-  return filter(a:json['annotations'], 'l:line =~ v:val.title')	
+  let l:row = line('.')
+  return filter(a:json['annotations'], 'l:line =~ v:val.title && l:row == v:val.row')	
 endfunction
+" }}}1
 
-function! s:count_candidate(json) abort
-  let l:line = getline('.')
-  call filter(a:json['annotations'], 'l:line =~ v:val.title')
-  return count(a:json)
-endfunction
-
-function! annotation#exists_json_file(json_path) abort
+function! annotation#exists_json_file(json_path) abort "{{{1
   if filereadable(a:json_path)
     return v:true
   else
     return v:false
   endif
 endfunction
+" }}}1
 
 function! annotation#make_candidate_text(json) abort "{{{1
   echo a:json
@@ -316,12 +326,20 @@ function! annotation#make_candidate_text(json) abort "{{{1
 endfunction
 " }}}1
 
-function! annotation#extract_annotation_by_title(title) abort
+function! annotation#extract_annotation_by_title(title) abort "{{{1
   let l:json = json_decode(readfile(s:json_path)[0])
   call filter(l:json['annotations'], 'a:title == v:val.title') 
 
   return empty(l:json['annotations']) ? v:false : v:true
 endfunction
+" }}}1
+
+function! s:count_candidate(json) abort "{{{1
+  let l:line = getline('.')
+  call filter(a:json['annotations'], 'l:line =~ v:val.title')
+  return count(a:json)
+endfunction
+" }}}1
 
 
 "ビジュアルモードで選択中のテクストを取得する {{{
