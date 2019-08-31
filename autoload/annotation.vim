@@ -16,7 +16,7 @@ function! annotation#colorize() abort "{{{1
   endfor
 endfunction
 " }}}1
-
+"
 function! annotation#refer() abort "{{{1
   let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
   if !annotation#exists_json_file(s:json_path)
