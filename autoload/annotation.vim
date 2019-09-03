@@ -3,6 +3,24 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
+
+autocmd CursorMoved,CursorMovedI * call s:cursor_wating()
+function! s:cursor_wating() abort
+  let s:timer_id = timer_start(3000, function('s:show_annotation'))
+endfunction
+
+function! s:show_annotation(timer_id) abort
+  let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
+  if !annotation#exists_json_file(l:json_path)
+    return
+  endif
+
+  " extract
+  let l:json = json_decode(readfile(l:json_path)[0])
+
+  " show annnotation in statusline
+endfunction
+
 function! annotation#colorize() abort "{{{1
   let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
   if !annotation#exists_json_file(l:json_path)
