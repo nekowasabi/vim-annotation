@@ -3,9 +3,8 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
-
-autocmd CursorMoved,CursorMovedI * call s:cursor_wating()
-function! s:cursor_wating() abort
+autocmd CursorMoved,CursorMovedI * call s:cursor_waiting()
+function! s:cursor_waiting() abort
   let s:timer_id = timer_start(3000, function('s:show_annotation'))
 endfunction
 
@@ -15,10 +14,14 @@ function! s:show_annotation(timer_id) abort
     return
   endif
 
-  " extract
   let l:json = json_decode(readfile(l:json_path)[0])
+  let l:annotation = annotation#extract_by_annotation_settings(l:json)
 
-  " show annnotation in statusline
+  if empty(l:annotation)
+    return
+  endif
+
+  echo l:annotation[0].annotation
 endfunction
 
 function! annotation#colorize() abort "{{{1
@@ -34,7 +37,7 @@ function! annotation#colorize() abort "{{{1
   endfor
 endfunction
 " }}}1
-"
+
 function! annotation#refer() abort "{{{1
   let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
   if !annotation#exists_json_file(s:json_path)
@@ -43,19 +46,25 @@ function! annotation#refer() abort "{{{1
   endif
 
   let l:json = json_decode(readfile(s:json_path)[0])
-  let l:json_include_title = annotation#extract_title_by_annotation_settings(l:json)
 
   if empty(l:json['annotations'])
     echo "Annotation is none."
     return
   endif
 
-  if len(l:json['annotations']) == 1
-    call annotation#refer_open(l:json['annotations'][0])
+  let l:annotations = annotation#extract_by_linenum(l:json['annotations'])
+
+  if len(l:annotations) == 0
+  echo "Annotation is none."
     return
   endif
 
-  if len(l:json['annotations']) > 1
+  if len(l:annotations) == 1
+    call annotation#refer_open(l:annotations[0])
+    return
+  endif
+
+  if len(l:annotations) > 1
     let l:num = input(annotation#make_candidate_text(l:json['annotations']).'Select annotation: ')
     call annotation#refer_open(l:json['annotations'][l:num])
   endif
@@ -63,6 +72,11 @@ function! annotation#refer() abort "{{{1
   return
 endfunction
 " }}}1
+
+function! annotation#extract_by_linenum(annotations) abort
+  let l:row = line('.')
+  return filter(a:annotations, 'v:val.row == l:row') 
+endfunction
 
 function! annotation#refer_open(json) abort "{{{1
   if a:json.annotation != ""
@@ -315,7 +329,7 @@ function! annotation#set_view_template(json) abort "{{{1
 endfunction
 " }}}1
 
-function! annotation#extract_title_by_annotation_settings(json) abort "{{{1
+function! annotation#extract_by_annotation_settings(json) abort "{{{1
   let l:line = getline('.')
   let l:row = line('.')
   return filter(a:json['annotations'], 'l:line =~ v:val.title && l:row == v:val.row')	
@@ -332,11 +346,11 @@ endfunction
 " }}}1
 
 function! annotation#make_candidate_text(json) abort "{{{1
-  echo a:json
   let l:word = ''
   let l:candidate_number = 0
+
   for annotation_setting in a:json
-    let l:word = l:word . l:candidate_number . '.' . annotation_setting['title']. '  '. annotation_setting['path'] . "\n"
+    let l:word = l:word . l:candidate_number . '.' . annotation_setting['annotation']. ' ' . "\n"
     let l:candidate_number += 1
   endfor
 
@@ -358,7 +372,6 @@ function! s:count_candidate(json) abort "{{{1
   return count(a:json)
 endfunction
 " }}}1
-
 
 "ビジュアルモードで選択中のテクストを取得する {{{
 function! s:get_visual_text()
