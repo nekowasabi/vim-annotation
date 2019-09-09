@@ -3,6 +3,19 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
+" 読み込み時にb:xxxxにファイルの行数を取得
+" autocmd TextChangedとかのフックが発火
+" 行数の増減を判定
+" 行数の差分取得
+" 行数b:xxxx更新
+" jsonの行数を差分だけ更新 / map()とかで
+
+" TODO: colorizeのON/OFF機能
+" TODO: 特定のファイルタイプだけ発火 
+" TODO: ヘルプを書く
+" TODO: 注釈一覧
+" TODO: denite連携
+
 autocmd CursorMoved,CursorMovedI * call s:cursor_waiting()
 function! s:cursor_waiting() abort
   let s:timer_id = timer_start(3000, function('s:show_annotation'))
@@ -21,6 +34,7 @@ function! s:show_annotation(timer_id) abort
     return
   endif
 
+  " show annotation in statusline
   echo l:annotation[0].annotation
 endfunction
 
@@ -34,6 +48,7 @@ function! annotation#colorize() abort "{{{1
   for annotation in l:json['annotations']
       let l:regexp = '\%'.annotation.row.'l'.annotation.title
       exe 'syn match AnnotationString /'.l:regexp.'/ containedin=ALL'
+      exe 'syn match Define /'.l:regexp.'/ containedin=ALL'
   endfor
 endfunction
 " }}}1
