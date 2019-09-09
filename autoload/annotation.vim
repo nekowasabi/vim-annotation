@@ -47,8 +47,8 @@ function! annotation#colorize() abort "{{{1
   let l:json = json_decode(readfile(l:json_path)[0])
   for annotation in l:json['annotations']
       let l:regexp = '\%'.annotation.row.'l'.annotation.title
-      exe 'syn match AnnotationString /'.l:regexp.'/ containedin=ALL'
-      exe 'syn match Define /'.l:regexp.'/ containedin=ALL'
+      " exe 'syn match AnnotationString /'.l:regexp.'/ containedin=ALL'
+      let w:current_match = matchadd('AnnotationString', l:regexp)
   endfor
 endfunction
 " }}}1
