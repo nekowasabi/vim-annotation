@@ -5,6 +5,9 @@ set cpo&vim
 
 " 読み込み時にb:xxxxにファイルの行数を取得
 " autocmd TextChangedとかのフックが発火
+function! annotation#update_annotation_line() abort
+  let b:line_num = line('$')
+endfunction
 " 行数の増減を判定
 " 行数の差分取得
 " 行数b:xxxx更新
@@ -19,6 +22,13 @@ set cpo&vim
 autocmd CursorMoved,CursorMovedI * call s:cursor_waiting()
 function! s:cursor_waiting() abort
   let s:timer_id = timer_start(3000, function('s:show_annotation'))
+endfunction
+
+function! annotation#turn_off_highlight() abort
+  echo w:current_highligt
+  if !empty(w:current_highligt)
+    call matchdelete(w:current_highligt)
+  endif
 endfunction
 
 function! s:show_annotation(timer_id) abort
@@ -48,7 +58,7 @@ function! annotation#colorize() abort "{{{1
   for annotation in l:json['annotations']
       let l:regexp = '\%'.annotation.row.'l'.annotation.title
       " exe 'syn match AnnotationString /'.l:regexp.'/ containedin=ALL'
-      let w:current_match = matchadd('AnnotationString', l:regexp)
+      let w:current_highligt = matchadd('AnnotationString', l:regexp)
   endfor
 endfunction
 " }}}1
