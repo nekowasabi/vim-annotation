@@ -3,15 +3,34 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
+let w:current_highlight_ids = []
+
+au BufEnter,BufRead * call annotation#update_annotation_before_linenum()
+
 " 読み込み時にb:xxxxにファイルの行数を取得
 " autocmd TextChangedとかのフックが発火
-function! annotation#update_annotation_line() abort
+function! annotation#update_annotation_now_linenum() abort
   let b:line_num = line('$')
 endfunction
-" 行数の増減を判定
+
+function! annotation#update_annotation_before_linenum() abort
+  let b:before_line_num = line('$')
+endfunction
+
 " 行数の差分取得
-" 行数b:xxxx更新
-" jsonの行数を差分だけ更新 / map()とかで
+function annotation#diff_linenum() abort
+  return annotation#update_annotation_before_linenum() - line('$')
+endfunction
+
+function annotation#update_annotation_json() abort
+  if annotation#diff_linenum() != 0
+
+    " jsonの行数を差分だけ更新 / map()とかで
+  endif
+
+  call annotation#update_annotation_now_linenum()
+endfunction
+
 
 " TODO: colorizeのON/OFF機能
 " TODO: 特定のファイルタイプだけ発火 
@@ -25,10 +44,7 @@ function! s:cursor_waiting() abort
 endfunction
 
 function! annotation#turn_off_highlight() abort
-  echo w:current_highligt
-  if !empty(w:current_highligt)
-    call matchdelete(w:current_highligt)
-  endif
+  call clearmatches()
 endfunction
 
 function! s:show_annotation(timer_id) abort
@@ -57,8 +73,8 @@ function! annotation#colorize() abort "{{{1
   let l:json = json_decode(readfile(l:json_path)[0])
   for annotation in l:json['annotations']
       let l:regexp = '\%'.annotation.row.'l'.annotation.title
-      " exe 'syn match AnnotationString /'.l:regexp.'/ containedin=ALL'
-      let w:current_highligt = matchadd('AnnotationString', l:regexp)
+      let l:highlight_id = matchadd('AnnotationString', l:regexp)
+      call add(w:current_highlight_ids, l:highlight_id)
   endfor
 endfunction
 " }}}1
