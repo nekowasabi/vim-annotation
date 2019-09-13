@@ -5,32 +5,33 @@ set cpo&vim
 
 let w:current_highlight_ids = []
 
-au BufEnter,BufRead * call annotation#update_annotation_before_linenum()
+au BufEnter,BufRead * call annotation#update_linenum_by_bufenter()
 
 " 読み込み時にb:xxxxにファイルの行数を取得
-" autocmd TextChangedとかのフックが発火
-function! annotation#update_annotation_now_linenum() abort
-  let b:line_num = line('$')
-endfunction
-
-function! annotation#update_annotation_before_linenum() abort
+function! annotation#update_linenum_by_bufenter() abort
   let b:before_line_num = line('$')
 endfunction
 
-" 行数の差分取得
-function annotation#diff_linenum() abort
-  return annotation#update_annotation_before_linenum() - line('$')
-endfunction
-
+" autocmd TextChangedとかのフックが発火
 function annotation#update_annotation_json() abort
-  if annotation#diff_linenum() != 0
-
-    " jsonの行数を差分だけ更新 / map()とかで
+  let l:diff = annotation#get_diff_linenum()
+  if l:diff == 0
+    return
   endif
 
-  call annotation#update_annotation_now_linenum()
+  " jsonの行数を差分だけ更新 / map()とかで
+  call annotation#save_diff_linenum(l:diff)
 endfunction
 
+" 行数の差分取得
+function annotation#get_diff_linenum() abort
+  return b:before_line_num - line('$')
+endfunction
+
+function! annotation#save_diff_linenum(diff) abort
+  " 差分をjsonに反映
+  " ファイルに保存
+endfunction
 
 " TODO: colorizeのON/OFF機能
 " TODO: 特定のファイルタイプだけ発火 
