@@ -30,7 +30,14 @@ endfunction
 
 function! annotation#save_diff_linenum(diff) abort
   " 差分をjsonに反映
+    l:file_json = annotation#reflect_difference(a:diff)
+
   " ファイルに保存
+  let l:file_json = json_encode(l:file_json)
+  call writefile([l:file_json], s:json_path)
+endfunction
+
+function! annotation#reflect_difference(diff) abort
 endfunction
 
 " TODO: colorizeのON/OFF機能
