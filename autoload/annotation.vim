@@ -12,6 +12,7 @@ set cpo&vim
 let w:current_highlight_ids = []
 
 au BufEnter,BufRead * call annotation#update_linenum_by_bufenter()
+au CursorMoved,CursorMovedI * call s:cursor_waiting()
 
 function! annotation#update_linenum_by_bufenter() abort
   let b:before_line_num = line('$')
@@ -46,7 +47,6 @@ function! annotation#save_difference(diff) abort
   let l:file_json = json_encode(l:file_json)
 
   call writefile([l:file_json], l:json_path)
-  echo l:file_json
 endfunction
 
 function! annotation#reflect_difference_to_json(diff, json_path) abort
