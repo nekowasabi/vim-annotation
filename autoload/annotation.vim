@@ -1,5 +1,11 @@
 scriptencoding utf-8
 
+" TODO: colorizeのON/OFF機能
+" TODO: 特定のファイルタイプだけ発火 
+" TODO: ヘルプを書く
+" TODO: 注釈一覧
+" TODO: denite連携
+
 let s:save_cpo = &cpo
 set cpo&vim
 
@@ -7,46 +13,48 @@ let w:current_highlight_ids = []
 
 au BufEnter,BufRead * call annotation#update_linenum_by_bufenter()
 
-" 読み込み時にb:xxxxにファイルの行数を取得
 function! annotation#update_linenum_by_bufenter() abort
   let b:before_line_num = line('$')
 endfunction
 
-" autocmd TextChangedとかのフックが発火
 function annotation#update_annotation_json() abort
-  let l:diff = annotation#get_diff_linenum()
+  let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
+  if !annotation#exists_json_file(l:json_path)
+    return
+  endif
+
+  let l:diff = annotation#get_difference()
   if l:diff == 0
     return
   endif
 
-  " jsonの行数を差分だけ更新 / map()とかで
-  call annotation#save_diff_linenum(l:diff)
+  call annotation#save_difference(l:diff)
+
+  call annotation#update_linenum_by_bufenter()
+
+  call annotation#colorize()
 endfunction
 
-" 行数の差分取得
-function annotation#get_diff_linenum() abort
-  return b:before_line_num - line('$')
+function annotation#get_difference() abort
+  return  line('$') - b:before_line_num
 endfunction
 
-function! annotation#save_diff_linenum(diff) abort
-  " 差分をjsonに反映
-    l:file_json = annotation#reflect_difference(a:diff)
+function! annotation#save_difference(diff) abort
+  let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
+  let l:file_json = annotation#reflect_difference_to_json(a:diff, l:json_path)
 
-  " ファイルに保存
   let l:file_json = json_encode(l:file_json)
-  call writefile([l:file_json], s:json_path)
+
+  call writefile([l:file_json], l:json_path)
+  echo l:file_json
 endfunction
 
-function! annotation#reflect_difference(diff) abort
+function! annotation#reflect_difference_to_json(diff, json_path) abort
+  let l:json = json_decode(readfile(a:json_path)[0])
+  call map(l:json['annotations'], 'extend(v:val, {"row": v:val.row + a:diff})')
+  return l:json
 endfunction
 
-" TODO: colorizeのON/OFF機能
-" TODO: 特定のファイルタイプだけ発火 
-" TODO: ヘルプを書く
-" TODO: 注釈一覧
-" TODO: denite連携
-
-autocmd CursorMoved,CursorMovedI * call s:cursor_waiting()
 function! s:cursor_waiting() abort
   let s:timer_id = timer_start(3000, function('s:show_annotation'))
 endfunction
@@ -68,7 +76,6 @@ function! s:show_annotation(timer_id) abort
     return
   endif
 
-  " show annotation in statusline
   echo l:annotation[0].annotation
 endfunction
 
