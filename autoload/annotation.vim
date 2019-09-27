@@ -1,6 +1,5 @@
 scriptencoding utf-8
 
-" TODO: colorizeのON/OFF機能
 " TODO: 特定のファイルタイプだけ発火 
 " TODO: ヘルプを書く
 " TODO: 注釈一覧
@@ -13,6 +12,48 @@ let w:current_highlight_ids = []
 
 au BufEnter,BufRead * call annotation#update_linenum_by_bufenter()
 au CursorMoved,CursorMovedI * call s:cursor_waiting()
+
+function! annotation#delete() abort
+  let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
+  if !annotation#exists_json_file(s:json_path)
+    echo "Annotation file is none"
+    return
+  endif
+
+  let l:json = json_decode(readfile(s:json_path)[0])
+
+  if empty(l:json['annotations'])
+    echo "Annotation is none."
+    return
+  endif
+
+  " 該当行＆テキストでjsonから抽出
+  let l:registed_annotations = annotation#extract_by_linenum(l:json['annotations'])
+
+  if len(l:registed_annotations) == 0
+    echo "Annotation is none."
+    return
+  endif
+
+  let l:json = json_decode(readfile(s:json_path)[0])
+  " if 1つなら then 削除
+  if len(l:registed_annotations) == 1
+    let l:extracted_annotations = annotation#remove_item_by_title_and_row(l:json['annotations'], l:registed_annotations)
+    echo l:extracted_annotations
+    return
+  endif
+
+  " if 1つ以上なら then 選択ダイアログを出してから削除
+  if len(l:registed_annotations) > 1
+    let l:num = input(annotation#make_candidate_text(l:json['annotations']).'Select annotation: ')
+    " call annotation#refer_open(l:json['annotations'][l:num])
+  endif
+
+  " json保存
+  " colorize
+
+  return
+endfunction
 
 function! annotation#update_linenum_by_bufenter() abort
   let b:before_line_num = line('$')
@@ -129,10 +170,11 @@ function! annotation#refer() abort "{{{1
 endfunction
 " }}}1
 
-function! annotation#extract_by_linenum(annotations) abort
+function! annotation#extract_by_linenum(annotations) abort "{{{1
   let l:row = line('.')
   return filter(a:annotations, 'v:val.row == l:row') 
 endfunction
+" }}}1
 
 function! annotation#refer_open(json) abort "{{{1
   if a:json.annotation != ""
@@ -384,6 +426,14 @@ function! annotation#set_view_template(json) abort "{{{1
   return
 endfunction
 " }}}1
+
+
+
+function! annotation#remove_item_by_title_and_row(json, removed_item) abort "{{{1
+  return filter(a:json, "a:removed_item[0].title != v:val.title || a:removed_item[0].row != v:val.row")	
+endfunction
+" }}}1
+
 
 function! annotation#extract_by_annotation_settings(json) abort "{{{1
   let l:line = getline('.')
