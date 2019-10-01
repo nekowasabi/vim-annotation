@@ -38,8 +38,15 @@ function! annotation#delete() abort
   let l:json = json_decode(readfile(s:json_path)[0])
   " if 1つなら then 削除
   if len(l:registed_annotations) == 1
-    let l:extracted_annotations = annotation#remove_item_by_title_and_row(l:json['annotations'], l:registed_annotations)
-    echo l:extracted_annotations
+    let l:extracted_annotations = annotation#remove_item_by_title_and_row(l:json, l:registed_annotations)
+    let l:file_json = {'annotations': []}
+    if !empty(l:extracted_annotations)
+      let l:file_json = {'annotations': l:extracted_annotations}
+    endif
+    let l:extracted_annotations = json_encode(l:file_json)
+    call writefile([l:extracted_annotations], s:json_path)
+    call annotation#turn_off_highlight()
+    call annotation#colorize()
     return
   endif
 
@@ -48,9 +55,6 @@ function! annotation#delete() abort
     let l:num = input(annotation#make_candidate_text(l:json['annotations']).'Select annotation: ')
     " call annotation#refer_open(l:json['annotations'][l:num])
   endif
-
-  " json保存
-  " colorize
 
   return
 endfunction
@@ -111,6 +115,10 @@ function! s:show_annotation(timer_id) abort
   endif
 
   let l:json = json_decode(readfile(l:json_path)[0])
+  if empty(l:json['annotations'])
+    return
+  endif
+
   let l:annotation = annotation#extract_by_annotation_settings(l:json)
 
   if empty(l:annotation)
@@ -427,13 +435,10 @@ function! annotation#set_view_template(json) abort "{{{1
 endfunction
 " }}}1
 
-
-
 function! annotation#remove_item_by_title_and_row(json, removed_item) abort "{{{1
-  return filter(a:json, "a:removed_item[0].title != v:val.title || a:removed_item[0].row != v:val.row")	
+  return filter(a:json['annotations'], "a:removed_item[0].title != v:val.title || a:removed_item[0].row != v:val.row")	
 endfunction
 " }}}1
-
 
 function! annotation#extract_by_annotation_settings(json) abort "{{{1
   let l:line = getline('.')
