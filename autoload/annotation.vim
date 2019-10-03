@@ -31,7 +31,6 @@ function! annotation#delete() abort
   let l:registed_annotations = annotation#extract_by_linenum(l:json['annotations'])
 
   if len(l:registed_annotations) == 0
-    echo 'bbb'
     echo "Annotation is none."
     return
   endif
@@ -53,6 +52,10 @@ function! annotation#delete() abort
   " if 1つ以上なら then 選択ダイアログを出してから削除
   if len(l:registed_annotations) > 1
     let l:num = input(annotation#make_candidate_text(l:json['annotations']).'Select annotation: ')
+
+    if empty(l:num)
+      return
+    endif
 
     call remove(l:json['annotations'], l:num)
     call writefile([json_encode(l:json)], s:json_path)
@@ -176,6 +179,11 @@ function! annotation#refer() abort "{{{1
 
   if len(l:annotations) > 1
     let l:num = input(annotation#make_candidate_text(l:json['annotations']).'Select annotation: ')
+
+    if empty(l:num)
+      return
+    endif
+
     call annotation#refer_open(l:json['annotations'][l:num])
   endif
 
@@ -365,7 +373,6 @@ function! annotation#save_to_json(save_mode) abort "{{{1
   endif
 
   let l:file_json = json_encode(l:file_json)
-  echo l:file_json
   call writefile([l:file_json], s:json_path)
 
   echo "saved."
@@ -447,8 +454,6 @@ endfunction
 " }}}1
 
 function! annotation#remove_item_by_title_and_row_in_multiple_item(json, removed_item, num) abort "{{{1
-  echo a:json['annotations']
-  echo a:removed_item[a:num]
   return filter(a:json['annotations'], "(a:removed_item[a:num].title != v:val.title || a:removed_item[a:num].row != v:val.row)")	
 endfunction
 " }}}1
@@ -473,8 +478,11 @@ endfunction
 function! annotation#make_candidate_text(json) abort "{{{1
   let l:word = ''
   let l:candidate_number = 0
+  let l:line_num = line('.')
 
-  for annotation_setting in a:json
+  let l:json = filter(a:json, "v:val['row'] == l:line_num")
+
+  for annotation_setting in l:json
     let l:word = l:word . l:candidate_number . '.' . annotation_setting['title'] .' -- '. annotation_setting['annotation']. ' ' . "\n"
     let l:candidate_number += 1
   endfor
