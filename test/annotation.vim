@@ -1,6 +1,6 @@
-let s:suite = themis#suite('Test for my plugin')
+let s:suite = themis#suite('Test for vim-annotation')
 let s:assert = themis#helper('assert')
 
-function! s:suite.my_test_1()
-  call s:assert.equals(4, s:aaa())
+function! s:suite.exists_json_file()
+  call s:assert.equals(v:false, annotation#exists_json_file('aaaa'))
 endfunction
