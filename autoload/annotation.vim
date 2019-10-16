@@ -13,11 +13,11 @@ let w:current_highlight_ids = []
 au BufEnter,BufRead * call annotation#update_linenum_by_bufenter()
 au CursorMoved,CursorMovedI * call s:cursor_waiting()
 
-function! annotation#delete() abort
+function! annotation#delete() abort "{{{1
   let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
   if !annotation#exists_json_file(s:json_path)
     echo "Annotation file is none"
-    return
+    return v:false
   endif
 
   let l:json = json_decode(readfile(s:json_path)[0])
@@ -66,12 +66,14 @@ function! annotation#delete() abort
 
   return
 endfunction
+" }}}1
 
-function! annotation#update_linenum_by_bufenter() abort
+function! annotation#update_linenum_by_bufenter() abort "{{{1
   let b:before_line_num = line('$')
 endfunction
+" }}}1
 
-function annotation#update_annotation_json() abort
+function annotation#update_annotation_json() abort "{{{1
   let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
   if !annotation#exists_json_file(l:json_path)
     return
@@ -88,12 +90,14 @@ function annotation#update_annotation_json() abort
 
   call annotation#colorize()
 endfunction
+" }}}1
 
-function annotation#get_difference() abort
+function annotation#get_difference() abort "{{{1
   return  line('$') - b:before_line_num
 endfunction
+" }}}1
 
-function! annotation#save_difference(diff) abort
+function! annotation#save_difference(diff) abort "{{{1
   let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
   let l:file_json = annotation#reflect_difference_to_json(a:diff, l:json_path)
 
@@ -101,22 +105,26 @@ function! annotation#save_difference(diff) abort
 
   call writefile([l:file_json], l:json_path)
 endfunction
+" }}}1
 
-function! annotation#reflect_difference_to_json(diff, json_path) abort
+function! annotation#reflect_difference_to_json(diff, json_path) abort "{{{1
   let l:json = json_decode(readfile(a:json_path)[0])
   call map(l:json['annotations'], 'extend(v:val, {"row": v:val.row + a:diff})')
   return l:json
 endfunction
+" }}}1
 
-function! s:cursor_waiting() abort
+function! s:cursor_waiting() abort "{{{1
   let s:timer_id = timer_start(3000, function('s:show_annotation'))
 endfunction
+" }}}1
 
-function! annotation#turn_off_highlight() abort
+function! annotation#turn_off_highlight() abort "{{{1
   call clearmatches()
 endfunction
+" }}}1
 
-function! s:show_annotation(timer_id) abort
+function! s:show_annotation(timer_id) abort "{{{1
   let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
   if !annotation#exists_json_file(l:json_path)
     return
@@ -135,6 +143,7 @@ function! s:show_annotation(timer_id) abort
 
   echo l:annotation[0].annotation
 endfunction
+" }}}1
 
 function! annotation#colorize() abort "{{{1
   let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
