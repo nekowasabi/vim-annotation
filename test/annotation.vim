@@ -12,8 +12,16 @@ function! s:suite.delete_not_exists_json()
   call s:assert.equals(annotation#delete(), v:false)
 endfunction
 
-function! s:suite.reflect_difference_to_json()
+function! s:suite.reflect_difference_to_json_plus()
   let l:path = s:plugin_path.'test/json/reflect_difference_to_json.json'
+
   let l:result = annotation#reflect_difference_to_json(1, l:path)
   call s:assert.equals(l:result['annotations'][0].row, 161)
+endfunction
+
+function! s:suite.reflect_difference_to_json_minus()
+  let l:path = s:plugin_path.'test/json/reflect_difference_to_json.json'
+
+  let l:result = annotation#reflect_difference_to_json(-1, l:path)
+  call s:assert.equals(l:result['annotations'][0].row, 159)
 endfunction
