@@ -171,26 +171,26 @@ function! annotation#refer() abort "{{{1
 
   if empty(l:json['annotations'])
     echo "Annotation is none."
-    return
+    return v:false
   endif
 
   let l:annotations = annotation#extract_by_linenum(l:json['annotations'])
 
   if len(l:annotations) == 0
-  echo "Annotation is none."
-    return
+    echo "Annotation is none."
+    return v:false
   endif
 
   if len(l:annotations) == 1
     call annotation#refer_open(l:annotations[0])
-    return
+    return v:true
   endif
 
   if len(l:annotations) > 1
     let l:num = input(annotation#make_candidate_text(l:json['annotations']).'Select annotation: ')
 
     if empty(l:num)
-      return
+      return v:false
     endif
 
     call annotation#refer_open(l:json['annotations'][l:num])
