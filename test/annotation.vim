@@ -25,3 +25,12 @@ function! s:suite.reflect_difference_to_json_minus()
   let l:result = annotation#reflect_difference_to_json(-1, l:path)
   call s:assert.equals(l:result['annotations'][0].row, 159)
 endfunction
+
+function! s:suite.extract_by_linenum_empty()
+  let l:json = s:plugin_path.'test/json/extract_by_linenum_empty.json'
+  let l:json = json_decode(readfile(l:json)[0])
+
+  let l:result = annotation#extract_by_linenum(l:json['annotations'])
+  call s:assert.empty(l:result)
+endfunction
+
