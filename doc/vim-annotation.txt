@@ -1,8 +1,0 @@
-*vim-annotation* Set annotation without tag.
-
-Version: 0.1.0
-Author: takets <nolifeking00@gmail.com>
-License: MIT License
-
-==============================================================================
-CONTENTS *vim-annotation-contents*

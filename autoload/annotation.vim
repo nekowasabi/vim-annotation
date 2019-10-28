@@ -1,10 +1,5 @@
 scriptencoding utf-8
 
-" TODO: 特定のファイルタイプだけ発火 
-" TODO: ヘルプを書く
-" TODO: 注釈一覧
-" TODO: denite連携
-
 let s:save_cpo = &cpo
 set cpo&vim
 
