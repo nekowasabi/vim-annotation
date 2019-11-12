@@ -11,7 +11,7 @@ au CursorMoved,CursorMovedI * call s:cursor_waiting()
 function! annotation#delete() abort "{{{1
   let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
   if !annotation#exists_json_file(s:json_path)
-    echo "Annotation file is none"
+    echo 'Annotation file is none'
     return v:false
   endif
 
@@ -155,60 +155,11 @@ function! annotation#colorize() abort "{{{1
 endfunction
 " }}}1
 
-function! annotation#refer() abort "{{{1
-  let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
-  if !annotation#exists_json_file(s:json_path)
-    echo "Annotation file is none"
-    return
-  endif
-
-  let l:json = json_decode(readfile(s:json_path)[0])
-
-  if empty(l:json['annotations'])
-    echo "Annotation is none."
-    return v:false
-  endif
-
-  let l:annotations = annotation#extract_by_linenum(l:json['annotations'])
-
-  if len(l:annotations) == 0
-    echo "Annotation is none."
-    return v:false
-  endif
-
-  if len(l:annotations) == 1
-    call annotation#refer_open(l:annotations[0])
-    return v:true
-  endif
-
-  if len(l:annotations) > 1
-    let l:num = input(annotation#make_candidate_text(l:json['annotations']).'Select annotation: ')
-
-    if empty(l:num)
-      return v:false
-    endif
-
-    call annotation#refer_open(l:json['annotations'][l:num])
-  endif
-
-  return
-endfunction
-" }}}1
-
 function! annotation#extract_by_linenum(annotations) abort "{{{1
   let l:row = line('.')
   return filter(a:annotations, 'v:val.row == l:row') 
 endfunction
 " }}}1
-
-function! annotation#refer_open(json) abort "{{{1
-  if a:json.annotation != ""
-    call annotation#view(a:json)
-  endif
-
-  return
-endfunction
-" }}}
 
 function! annotation#view(json) abort "{{{1 
   let l:wid = bufwinnr(bufnr('__view__'))
@@ -238,8 +189,8 @@ function! annotation#open_dialog() abort "{{{1
     return
   endif
 
-  let l:is_exists_title = annotation#extract_annotation_by_title(s:get_visual_text())
-  if !l:is_exists_title
+  let l:exists_annotation = annotation#extract_annotation_by_title(s:get_visual_text())
+  if !l:exists_annotation
     call annotation#open_buffer_add_annotation()
     return
   endif
@@ -300,14 +251,6 @@ function! annotation#add_link() abort "{{{1
   silent file `='__link__'`
   call annotation#set_template_for_add_to(l:title, l:full_path)
   au! bufwritecmd <buffer> call annotation#save_to_json()
-endfunction
-" }}}1
-
-function! annotation#edit_link() abort "{{{1
-  if !filereadable(g:annotation_cache_path. expand('%') .'.json')
-    call annotation#open_buffer_add_annotation()
-    return
-  endif
 endfunction
 " }}}1
 
@@ -426,12 +369,12 @@ function! annotation#set_scratch_buffer() "{{{1
   setlocal noswapfile
   setlocal buflisted
   setlocal filetype=markdown
-  set fenc=utf-8
+  set fileencoding=utf-8
 endfunction
 " }}}1
 
 function! annotation#get_file_name() abort "{{{1
-  return has('unix') ? fnamemodify(expand('%'), ":t") : fnamemodify(expand('%:p'), ":t")
+  return has('unix') ? fnamemodify(expand('%'), ':t') : fnamemodify(expand('%:p'), ':t')
 endfunction
 " }}}1
 
@@ -453,15 +396,14 @@ endfunction
 " }}}1
 
 function! annotation#remove_item_by_title_and_row(json, removed_item, num) abort "{{{1
-  return filter(a:json['annotations'], "a:removed_item[a:num].title != v:val.title || a:removed_item[a:num].row != v:val.row")	
+  return filter(a:json['annotations'], 'a:removed_item[a:num].title != v:val.title || a:removed_item[a:num].row != v:val.row')	
 endfunction
 " }}}1
 
 function! annotation#remove_item_by_title_and_row_in_multiple_item(json, removed_item, num) abort "{{{1
-  return filter(a:json['annotations'], "(a:removed_item[a:num].title != v:val.title || a:removed_item[a:num].row != v:val.row)")	
+  return filter(a:json['annotations'], '(a:removed_item[a:num].title != v:val.title || a:removed_item[a:num].row != v:val.row)')	
 endfunction
 " }}}1
-
 
 function! annotation#extract_by_annotation_settings(json) abort "{{{1
   let l:line = getline('.')
@@ -527,7 +469,7 @@ function! s:get_visual_text()
     let selected = @@
     let @@ = tmp
     let splitted = split(selected, '\zs')
-    return join(splitted[0:-2], "")
+    return join(splitted[0:-2], '')
   catch
     return ''
   endtry

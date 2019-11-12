@@ -3,22 +3,12 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
-if !exists(':ReferAnnotation')
-	command! -range ReferAnnotation call annotation#refer()
+if !exists(':OpenAnnotation')
+	command! -range OpenAnnotation call annotation#open_dialog()
 endif
-
-if !exists(':EditAnnotation')
-	command! -range EditAnnotation call annotation#open_dialog()
-endif
-
 
 if !exists(':DeleteAnnotation')
 	command! -range DeleteAnnotation call annotation#delete()
-endif
-
-
-if !exists(':EditLink')
-	command! -range EditLink call annotation#edit_link()
 endif
 
 let &cpo = s:save_cpo
