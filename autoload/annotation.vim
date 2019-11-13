@@ -5,8 +5,11 @@ set cpo&vim
 
 let w:current_highlight_ids = []
 
-au BufEnter,BufRead * call annotation#update_linenum_by_bufenter()
-au CursorMoved,CursorMovedI * call s:cursor_waiting()
+augroup vim-annotation
+  autocmd!
+  au BufEnter,BufRead * call annotation#update_linenum_by_bufenter()
+  au CursorMoved,CursorMovedI * call s:cursor_waiting()
+augroup END
 
 function! annotation#delete() abort "{{{1
   let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
@@ -18,7 +21,7 @@ function! annotation#delete() abort "{{{1
   let l:json = json_decode(readfile(s:json_path)[0])
 
   if empty(l:json['annotations'])
-    echo "Annotation is none."
+    echo 'Annotation is none.'
     return
   endif
 
@@ -26,7 +29,7 @@ function! annotation#delete() abort "{{{1
   let l:registed_annotations = annotation#extract_by_linenum(l:json['annotations'])
 
   if len(l:registed_annotations) == 0
-    echo "Annotation is none."
+    echo 'Annotation is none.'
     return
   endif
 
@@ -174,7 +177,7 @@ endfunction
 " }}}1
 
 function! annotation#jump(json) abort "{{{1
-  execute ":e ".a:json['path']
+  execute ':e '.a:json['path']
   execute a:json['line']
   return
 endfunction
@@ -200,7 +203,7 @@ endfunction
 " }}}1
 
 function! annotation#open_buffer_add_annotation() abort "{{{1
-  let l:full_path = expand("%:p")
+  let l:full_path = expand('%:p')
   let l:title = s:get_visual_text()
   let l:row = line('.')
   let l:col = col('.')
@@ -212,9 +215,13 @@ function! annotation#open_buffer_add_annotation() abort "{{{1
   silent new
   silent file `='__annotation__'`
   call annotation#set_template_for_add_to(l:title, l:full_path, l:row, l:col)
-  au! bufwritecmd <buffer> call annotation#save_to_json('add')
 
 endfunction
+
+augroup save-annotation
+  autocmd!
+  au! bufwritecmd <buffer> call annotation#save_to_json('add')
+augroup END
 " }}}1
 
 function! annotation#open_buffer_edit_annotation() abort "{{{1
@@ -308,7 +315,7 @@ function! annotation#save_to_json(save_mode) abort "{{{1
     let l:file_json = {'annotations': []}
   endif
 
-  if a:save_mode == 'add'
+  if a:save_mode ==# 'add'
     call add(l:file_json['annotations'], {'title': l:title, 'path': l:path, 'row': l:row, 'col': l:col, 'annotation': l:text})
   else
     let l:index = annotation#search_json_index(l:file_json, l:title)
@@ -322,7 +329,7 @@ function! annotation#save_to_json(save_mode) abort "{{{1
   let l:file_json = json_encode(l:file_json)
   call writefile([l:file_json], s:json_path)
 
-  echo "saved."
+  echo 'saved.'
 endfunction
 " }}}1
 
@@ -360,7 +367,7 @@ endfunction
 " }}}1
 
 function! annotation#get_annotation_text() abort "{{{1
-  return join(getline(6, "$"), "\r")
+  return join(getline(6, '$'), '\r')
 endfunction
 " }}}1
 
