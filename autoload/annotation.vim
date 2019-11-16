@@ -3,7 +3,7 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
-let w:current_highlight_ids = []
+let g:current_highlight_ids = []
 au CursorMoved,CursorMovedI * call s:cursor_waiting()
 au BufEnter,BufRead * call annotation#colorize()
 
@@ -149,7 +149,7 @@ function! annotation#colorize() abort "{{{1
   for annotation in l:json['annotations']
       let l:regexp = '\%'.annotation.row.'l'.annotation.title
       let l:highlight_id = matchadd('AnnotationString', l:regexp)
-      call add(w:current_highlight_ids, l:highlight_id)
+      call add(g:current_highlight_ids, l:highlight_id)
   endfor
 endfunction
 " }}}1
@@ -189,7 +189,7 @@ function! annotation#open_dialog() abort "{{{1
     return
   endif
 
-  let l:exists_annotation = annotation#extract_annotation_by_title(s:get_visual_text())
+  let l:exists_annotation = annotation#extract_annotation_by_title()
   if !l:exists_annotation
     call annotation#open_buffer_add_annotation()
     return
@@ -202,7 +202,6 @@ endfunction
 function! annotation#open_buffer_add_annotation() abort "{{{1
   let l:full_path = expand('%:p')
   let l:title = s:get_visual_text() == '' ? expand("<cword>") : s:get_visual_text()
-  echo l:title
   let l:row = line('.')
   let l:col = col('.')
 
@@ -229,7 +228,6 @@ function! annotation#open_buffer_edit_annotation() abort "{{{1
   let l:template = annotation#set_edit_template(l:json)
 
   let l:annotations = split(l:json['annotations'][0].annotation, "\\\\r")
-  echo l:annotations
 
   silent new
   silent file `='__annotation__'`
@@ -271,7 +269,7 @@ endfunction
 " }}}1
 
 function! annotation#get_json_for_edit() abort "{{{1
-  let l:title = s:get_visual_text()
+  let l:title = s:get_visual_text() == '' ? expand("<cword>") : s:get_visual_text()
   let l:json = s:get_annotation_for_edit(l:title)
   return l:json
 endfunction
@@ -443,9 +441,12 @@ function! annotation#make_candidate_text(json) abort "{{{1
 endfunction
 " }}}1
 
-function! annotation#extract_annotation_by_title(title) abort "{{{1
+function! annotation#extract_annotation_by_title() abort "{{{1
   let l:json = json_decode(readfile(s:json_path)[0])
-  call filter(l:json['annotations'], 'a:title == v:val.title') 
+  let l:title = s:get_visual_text() == '' ? expand("<cword>") : s:get_visual_text()
+  echo l:title
+
+  call filter(l:json['annotations'], 'l:title == v:val.title') 
 
   return empty(l:json['annotations']) ? v:false : v:true
 endfunction
@@ -474,6 +475,7 @@ function! s:get_visual_text()
     silent normal gvy
     let selected = @@
     let @@ = tmp
+    let @@ = ''
     let splitted = split(selected, '\zs')
     return join(splitted[0:-2], '')
   catch
