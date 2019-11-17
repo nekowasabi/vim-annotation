@@ -32,12 +32,15 @@ function! annotation#delete() abort "{{{1
   let l:json = json_decode(readfile(s:json_path)[0])
   if len(l:registed_annotations) == 1
     let l:extracted_annotations = annotation#remove_item_by_title_and_row(l:json, l:registed_annotations, 0)
+
     let l:file_json = {'annotations': []}
     if !empty(l:extracted_annotations)
       let l:file_json = {'annotations': l:extracted_annotations}
     endif
+
     let l:extracted_annotations = json_encode(l:file_json)
     call writefile([l:extracted_annotations], s:json_path)
+
     call annotation#turn_off_highlight()
     call annotation#colorize()
     return
@@ -109,7 +112,7 @@ endfunction
 " }}}1
 
 function! s:cursor_waiting() abort "{{{1
-  let s:timer_id = timer_start(3000, function('s:show_annotation'))
+  let s:timer_id = timer_start(g:show_annotation_update_timer, function('s:show_annotation'))
 endfunction
 " }}}1
 
@@ -160,27 +163,7 @@ function! annotation#extract_by_linenum(annotations) abort "{{{1
 endfunction
 " }}}1
 
-function! annotation#view(json) abort "{{{1 
-  let l:wid = bufwinnr(bufnr('__view__'))
-  if l:wid != -1
-    return
-  endif
-  silent new
-  silent file `='__view__'`
-  call annotation#set_view_template(a:json)
-  call annotation#set_scratch_buffer()
-endfunction
-" }}}1
-
-function! annotation#jump(json) abort "{{{1
-  execute ':e '.a:json['path']
-  execute a:json['line']
-  return
-endfunction
-" }}}1
-
 function! annotation#open_dialog() abort "{{{1
-
   let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
   let l:is_file_readable = filereadable(g:annotation_cache_path. annotation#get_file_name() .'.json')
 
@@ -237,21 +220,6 @@ function! annotation#open_buffer_edit_annotation() abort "{{{1
   call setline(6, l:annotations)
 
   au! bufwritecmd <buffer> call annotation#save_to_json('add')
-endfunction
-" }}}1
-
-function! annotation#add_link() abort "{{{1
-  let l:full_path = expand("%:p")
-  let l:title = s:get_visual_text()
-
-  let l:wid = bufwinnr(bufnr('__link__'))
-  if l:wid != -1
-    return
-  endif
-  silent new
-  silent file `='__link__'`
-  call annotation#set_template_for_add_to(l:title, l:full_path)
-  au! bufwritecmd <buffer> call annotation#save_to_json()
 endfunction
 " }}}1
 
@@ -382,30 +350,8 @@ function! annotation#get_file_name() abort "{{{1
 endfunction
 " }}}1
 
-function! annotation#set_view_template(json) abort "{{{1
-  let l:template = []
-
-  " substitute for Japanese text in windows.
-  call add(l:template, 'title: '. substitute(a:json.title, '縺', '', 'g'))
-  call add(l:template, 'path: '.a:json.path)
-  call add(l:template, 'row: '.a:json.row)
-  call add(l:template, 'col: '.a:json.col)
-  call add(l:template, '---------')
-  let l:annotations = split(a:json.annotation, "\r")
-
-  call setline(1, l:template)
-  call setline(6, l:annotations)
-  return
-endfunction
-" }}}1
-
 function! annotation#remove_item_by_title_and_row(json, removed_item, num) abort "{{{1
   return filter(a:json['annotations'], 'a:removed_item[a:num].title != v:val.title || a:removed_item[a:num].row != v:val.row')	
-endfunction
-" }}}1
-
-function! annotation#remove_item_by_title_and_row_in_multiple_item(json, removed_item, num) abort "{{{1
-  return filter(a:json['annotations'], '(a:removed_item[a:num].title != v:val.title || a:removed_item[a:num].row != v:val.row)')	
 endfunction
 " }}}1
 
@@ -444,7 +390,6 @@ endfunction
 function! annotation#extract_annotation_by_title() abort "{{{1
   let l:json = json_decode(readfile(s:json_path)[0])
   let l:title = s:get_visual_text() == '' ? expand("<cword>") : s:get_visual_text()
-  echo l:title
 
   call filter(l:json['annotations'], 'l:title == v:val.title') 
 
