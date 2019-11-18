@@ -7,7 +7,7 @@ let g:current_highlight_ids = []
 au CursorMoved,CursorMovedI * call s:cursor_waiting()
 au BufEnter,BufRead * call annotation#colorize()
 
-if exists(g:show_annotation_update_timer)
+if !get(g:, 'show_annotation_update_timer', 0)
   let g:show_annotation_update_timer = 3000
 endif
 
