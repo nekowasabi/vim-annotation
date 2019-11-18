@@ -199,10 +199,17 @@ function! annotation#open_buffer_add_annotation() abort "{{{1
   silent new
   silent file `='__annotation__'`
   call annotation#set_template_for_add_to(l:title, l:full_path, l:row, l:col)
-  au bufwritecmd <buffer> call annotation#save_to_json('add')
+  au! bufwritecmd <buffer> call annotation#save_to_json()
+  au! Bufdelete,BufLeave <buffer> call annotation#delete_temporary_buffer()
 
 endfunction
+" }}}1
 
+function! annotation#delete_temporary_buffer() "{{{1
+  if bufname() == '__annotation__'
+    bdelete! __annotation__
+  endif
+endfunction
 " }}}1
 
 function! annotation#open_buffer_edit_annotation() abort "{{{1
@@ -223,7 +230,8 @@ function! annotation#open_buffer_edit_annotation() abort "{{{1
   call setline(1, l:template)
   call setline(6, l:annotations)
 
-  au! bufwritecmd <buffer> call annotation#save_to_json('add')
+  au! bufwritecmd <buffer> call annotation#save_to_json()
+  au! bufdelete,BufLeave <buffer> call annotation#delete_temporary_buffer()
 endfunction
 " }}}1
 
@@ -268,11 +276,11 @@ function! annotation#set_template_for_add_to(title, full_path, row, col) abort "
 endfunction
 " }}}1
 
-function! annotation#save_to_json(save_mode) abort "{{{1
+function! annotation#save_to_json() abort "{{{1
   let l:title = annotation#get_title()
   let l:path  = annotation#get_path()
-	let l:row = annotation#get_row()
-	let l:col = annotation#get_col()
+	let l:row   = annotation#get_row()
+	let l:col   = annotation#get_col()
   let l:text  = annotation#get_annotation_text()
 
   if filereadable(s:json_path)
