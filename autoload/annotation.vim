@@ -7,6 +7,10 @@ let g:current_highlight_ids = []
 au CursorMoved,CursorMovedI * call s:cursor_waiting()
 au BufEnter,BufRead * call annotation#colorize()
 
+if exists(g:show_annotation_update_timer)
+  let g:show_annotation_update_timer = 3000
+endif
+
 function! annotation#delete() abort "{{{1
   let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
   if !annotation#exists_json_file(s:json_path)
