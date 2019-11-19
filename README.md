@@ -37,14 +37,18 @@ ex.
 
 ### key bindings
 ex.
-    nnoremap <silent> <Leader>ao :OpenAnnotation<CR>
-    nnoremap <silent> <Leader>ad :DeleteAnnotation<CR>
+```
+nnoremap <silent> <Leader>ao :OpenAnnotation<CR>
+nnoremap <silent> <Leader>ad :DeleteAnnotation<CR>
+```
 
 ### syntax
 Use `AnnotationString`
 
-    autocmd ColorScheme * highlight AnnotationString ctermfg=red ctermbg=white
-    hi default link AnnotationString String
+```
+autocmd ColorScheme * highlight AnnotationString ctermfg=red ctermbg=white
+hi default link AnnotationString String
+```
 
 ## Screenshot
 ### Annotation taking
