@@ -56,8 +56,10 @@ Use `AnnotationString`
 ![open](https://github.com/nekowasabi/gif/blob/master/vim-annotation/open_annotation.gif)
 
 * Show all annotations.
+![open](https://github.com/nekowasabi/gif/blob/master/vim-annotation/show_annotation.gif)
 
 * Denite.nvim integration.
+![open](https://github.com/nekowasabi/gif/blob/master/vim-annotation/delete_annotation.gif)
 
 * Show annotation by floatwindow(neovim only).
 
