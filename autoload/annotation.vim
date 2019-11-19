@@ -286,11 +286,12 @@ function! annotation#save_to_json() abort "{{{1
   if filereadable(s:json_path)
     let l:file_json = json_decode(readfile(s:json_path)[0])
 
-    " if インデックスが存在するか？
     let l:index = annotation#search_json_index(l:file_json, l:title)
     if l:index == -1
+      " Add annotation
       call add(l:file_json['annotations'], {'title': l:title, 'path': l:path, 'row': l:row, 'col': l:col, 'annotation': l:text})
     else
+      " Edit annotation
       let l:file_json['annotations'][l:index].title = l:title
       let l:file_json['annotations'][l:index].path = l:path
       let l:file_json['annotations'][l:index].row = l:row
@@ -298,7 +299,7 @@ function! annotation#save_to_json() abort "{{{1
       let l:file_json['annotations'][l:index].annotation = l:text
     endif
   else
-    " ファイルの新規作成
+    " Add new file
     let l:file_json = {'annotations': []}
     call add(l:file_json['annotations'], {'title': l:title, 'path': l:path, 'row': l:row, 'col': l:col, 'annotation': l:text})
   endif

@@ -19,28 +19,26 @@ for dein
 ### Annotation taking
 1. Select words by visual mode
 
-2. Execute :EditAnnotation<CR>
+2. Execute :OpenAnnotation<CR>
 
 3. Write annotation
 
 ### Show annotation
 1. Move to setting annotation line.
 
-2. Execute :ReferAnnotation<CR>
-
-3. Show annotation in status line.
+2. Show annotation in status line.
 
 ## Settings
 ### save diretory
 Set default cache path.
 
 ex.
-    let g:annotation_cache_path = '/home/user/.cache/annotation_json/'
+    let g:annotation_cache_path = '/home/user_name/.cache/annotation_json/'
 
 ### key bindings
 ex.
-    nnoremap <silent> <Leader>ae :EditAnnotation<CR>
-    nnoremap <silent> <Leader>ar :ReferAnnotation<CR>
+    nnoremap <silent> <Leader>ao :OpenAnnotation<CR>
+    nnoremap <silent> <Leader>ad :DeleteAnnotation<CR>
 
 ### syntax
 Use `AnnotationString`
@@ -51,9 +49,11 @@ Use `AnnotationString`
 ## Screenshot
 ### Annotation taking
 ### Show annotation
+### Delete annotation
 
 ## TODO
 * Toggle annotation syntax.
+[open](https://github.com/nekowasabi/gif/blob/master/vim-annotation/open_annotation.gif)
 
 * Show all annotations.
 
