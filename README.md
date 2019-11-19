@@ -53,7 +53,7 @@ Use `AnnotationString`
 
 ## TODO
 * Toggle annotation syntax.
-[open](https://github.com/nekowasabi/gif/blob/master/vim-annotation/open_annotation.gif)
+![open](https://github.com/nekowasabi/gif/blob/master/vim-annotation/open_annotation.gif)
 
 * Show all annotations.
 
