@@ -29,11 +29,13 @@ for dein
 2. Show annotation in status line.
 
 ## Settings
-### save directory
+### set directory for save annotation data.
 Set default cache path.
 
 ex.
-    let g:annotation_cache_path = '/home/user_name/.cache/annotation_json/'
+```
+let g:annotation_cache_path = '/home/user_name/.cache/annotation_json/'
+```
 
 ### key bindings
 ex.
@@ -55,10 +57,10 @@ hi default link AnnotationString String
 ![open](https://github.com/nekowasabi/gif/blob/master/vim-annotation/open_annotation.gif)
 
 ### Show annotation
-![open](https://github.com/nekowasabi/gif/blob/master/vim-annotation/show_annotation.gif)
+![show](https://github.com/nekowasabi/gif/blob/master/vim-annotation/show_annotation.gif)
 
 ### Delete annotation
-![open](https://github.com/nekowasabi/gif/blob/master/vim-annotation/delete_annotation.gif)
+![delete](https://github.com/nekowasabi/gif/blob/master/vim-annotation/delete_annotation.gif)
 
 ## TODO
 * Toggle annotation syntax.
