@@ -13,7 +13,7 @@ for vim-plug
 
 for dein
 
-    call dein##add('nekowasabi/vim-annotation')
+    call dein#add('nekowasabi/vim-annotation')
 
 ## Quick start
 ### Annotation taking
