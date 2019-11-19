@@ -29,7 +29,7 @@ for dein
 2. Show annotation in status line.
 
 ## Settings
-### save diretory
+### save directory
 Set default cache path.
 
 ex.
