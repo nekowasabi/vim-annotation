@@ -13,7 +13,7 @@ endif
 
 function! annotation#delete() abort "{{{1
   let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
-  if !annotation#exists_json_file(s:json_path)
+  if !s:exists_json_file(s:json_path)
     echo 'Annotation file is none'
     return v:false
   endif
@@ -76,7 +76,7 @@ endfunction
 
 function annotation#update_annotation_json() abort "{{{1
   let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
-  if !annotation#exists_json_file(l:json_path)
+  if !s:exists_json_file(l:json_path)
     return
   endif
 
@@ -127,7 +127,7 @@ endfunction
 
 function! s:show_annotation(timer_id) abort "{{{1
   let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
-  if !annotation#exists_json_file(l:json_path)
+  if !s:exists_json_file(l:json_path)
     return
   endif
 
@@ -148,7 +148,7 @@ endfunction
 
 function! annotation#colorize() abort "{{{1
   let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
-  if !annotation#exists_json_file(l:json_path)
+  if !s:exists_json_file(l:json_path)
     return
   endif
 
@@ -378,7 +378,7 @@ function! annotation#extract_by_annotation_settings(json) abort "{{{1
 endfunction
 " }}}1
 
-function! annotation#exists_json_file(json_path) abort "{{{1
+function! s:exists_json_file(json_path) abort "{{{1
   if filereadable(a:json_path)
     return v:true
   else
