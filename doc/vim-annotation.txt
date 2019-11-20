@@ -1,0 +1,103 @@
+*vim-annotation.txt* sets text annotation in selected word.
+
+Version: 1.0
+Author: takets <nolifeking00 at gmail.com>
+License: MIT license
+
+CONTENTS						*vim-annotation-contents*
+
+Introduction		|vim-annotation-introduction|
+Install			|vim-annotation-install|
+Usage		|vim-annotation-usage|
+Annotation takeing		  |vim-annotation-taking|
+Show annotation	  |vim-annotation-show|
+Settings		  |vim-annotation-key-settings|
+Cache path		  |vim-annotation-cache|
+Key bindings		  |vim-annotation-keybind|
+Syntax		  |vim-annotation-syntax|
+Todo	    |vim-annotation-todo|
+
+==============================================================================
+INTRODUCTION *vim-annotation-introduction*
+
+Annotation taking in word, directly.
+
+Show memo in status line without other memo tools.
+
+==============================================================================
+INSTALL *vim-annotation-install*
+
+for vim-plug
+
+    Plug 'nekowasabi/vim-annotation'
+
+for dein
+
+    call dein#add('nekowasabi/vim-annotation')
+
+==============================================================================
+USAGE *vim-annotation-usage*
+
+------------------------------------------------------------------------------
+ANNOTATION TAKING *vim-annotation-takeing*
+
+1. Select words by visual mode
+
+2. Execute :AnnotationOpen<CR>
+
+3. Write annotation
+
+### Show annotation
+------------------------------------------------------------------------------
+SHOW ANNOTATION *vim-annotation-show*
+1. Move to setting annotation line.
+
+2. Show annotation in status line.
+
+==============================================================================
+SETTINGS *vim-annotation-settings*
+
+------------------------------------------------------------------------------
+CACHE PATH *vim-annotation-cache*
+
+Set directory for save annotation data.
+Set default cache path.
+
+ex.
+```
+let g:annotation_cache_path = '/home/user_name/.cache/annotation_json/'
+```
+
+------------------------------------------------------------------------------
+KEYBIND *vim-annotation-keybind*
+
+ex.
+```
+nnoremap <silent> <Leader>ao :AnnotationOpen<CR>
+nnoremap <silent> <Leader>ad :AnnotationDelete<CR>
+```
+
+------------------------------------------------------------------------------
+SYNTAX *vim-annotation-syntax*
+
+Use `AnnotationString`
+
+ex.
+```
+autocmd ColorScheme * highlight AnnotationString ctermfg=red ctermbg=white
+hi default link AnnotationString String
+```
+
+==============================================================================
+TODO *vim-annotation-todo*
+
+* Toggle annotation syntax.
+
+* Show all annotations.
+
+* Denite.nvim integration.
+
+* Show annotation by floatwindow(neovim only).
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:noet:fen:noet:
