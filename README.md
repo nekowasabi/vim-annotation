@@ -19,7 +19,7 @@ for dein
 ### Annotation taking
 1. Select words by visual mode
 
-2. Execute :OpenAnnotation<CR>
+2. Execute :AnnotationOpen<CR>
 
 3. Write annotation
 
@@ -40,8 +40,8 @@ let g:annotation_cache_path = '/home/user_name/.cache/annotation_json/'
 ### key bindings
 ex.
 ```
-nnoremap <silent> <Leader>ao :OpenAnnotation<CR>
-nnoremap <silent> <Leader>ad :DeleteAnnotation<CR>
+nnoremap <silent> <Leader>ao :AnnotationOpen<CR>
+nnoremap <silent> <Leader>ad :AnnotationDelete<CR>
 ```
 
 ### syntax
