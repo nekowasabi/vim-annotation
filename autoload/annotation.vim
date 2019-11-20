@@ -206,8 +206,8 @@ endfunction
 " }}}1
 
 function! annotation#delete_temporary_buffer() "{{{1
-  if bufname() == '__annotation__'
-    bdelete! __annotation__
+  if bufname('#') == '__annotation__'
+    bw! __annotation__
   endif
 endfunction
 " }}}1
@@ -308,6 +308,7 @@ function! annotation#save_to_json() abort "{{{1
   call writefile([l:file_json], s:json_path)
 
   echo 'saved.'
+	setlocal nomodified
 endfunction
 " }}}1
 
@@ -355,6 +356,8 @@ function! annotation#set_scratch_buffer() "{{{1
   setlocal buflisted
   setlocal filetype=markdown
   set fileencoding=utf-8
+  set buftype=acwrite
+  setlocal nomodified
 endfunction
 " }}}1
 
