@@ -8,7 +8,7 @@ au CursorMoved,CursorMovedI * call s:cursor_waiting()
 au BufEnter,BufRead * call annotation#colorize()
 
 if !get(g:, 'show_annotation_update_timer', 0)
-  let g:show_annotation_update_timer = 3000
+  let g:show_annotation_update_timer = 1500 
 endif
 
 function! annotation#delete() abort "{{{1
@@ -126,6 +126,11 @@ endfunction
 " }}}1
 
 function! s:show_annotation(timer_id) abort "{{{1
+  if get(g:, 'annottion_window', v:false)
+    call nvim_win_close(g:annottion_window, v:true)
+    unlet g:annottion_window
+  endif
+
   let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
   if !s:exists_json_file(l:json_path)
     return
@@ -136,15 +141,29 @@ function! s:show_annotation(timer_id) abort "{{{1
     return
   endif
 
-  let l:annotation = annotation#extract_by_annotation_settings(l:json)
+  let l:annotations = annotation#extract_by_annotation_settings(l:json)
 
-  if empty(l:annotation)
+  if empty(l:annotations)
     return
   endif
 
-  echo l:annotation[0].annotation
+  if g:annotation_show_floatwindow == v:true
+    call annotation#show_floatwindow(l:annotations[0].annotation)
+    return
+  endif
+  echo l:annotations[0].annotation
 endfunction
 " }}}1
+
+function! annotation#show_floatwindow(annotation) abort "{{{1
+  let buf = nvim_create_buf(v:false, v:true)
+  call nvim_buf_set_lines(buf, 0, -1, v:true, [a:annotation, a:annotation])
+  let opts = {'relative': 'cursor', 'width': 10, 'height': 2, 'col': 0, 'row': 1, 'anchor': 'NW', 'style': 'minimal'}
+  let g:annottion_window = nvim_open_win(buf, 0, opts)
+  call nvim_win_set_option(g:annottion_window, 'winhl', 'Normal:MyHighlight')
+endfunction
+" "}}}1
+
 
 function! annotation#colorize() abort "{{{1
   let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
