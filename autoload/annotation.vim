@@ -4,12 +4,15 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 let g:current_highlight_ids = []
+let g:current_floatwindow_ids = []
 au CursorMoved,CursorMovedI * call s:cursor_waiting()
 au BufEnter,BufRead * call annotation#colorize()
 
 if !get(g:, 'show_annotation_update_timer', 0)
   let g:show_annotation_update_timer = 1500 
 endif
+
+let s:float_annotation = ''
 
 function! annotation#delete() abort "{{{1
   let s:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
@@ -126,11 +129,6 @@ endfunction
 " }}}1
 
 function! s:show_annotation(timer_id) abort "{{{1
-  if get(g:, 'annottion_window', v:false)
-    call nvim_win_close(g:annotation_window, v:true)
-    unlet g:annotation_window
-  endif
-
   let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
   if !s:exists_json_file(l:json_path)
     return
@@ -144,12 +142,30 @@ function! s:show_annotation(timer_id) abort "{{{1
   let l:annotations = annotation#extract_by_annotation_settings(l:json)
 
   if empty(l:annotations)
+    if len(g:current_floatwindow_ids) != 0
+
+      for id in g:current_floatwindow_ids
+        if winbufnr(id) != -1
+          call nvim_win_close(id, v:true)
+        endif
+      endfor
+
+      let g:current_floatwindow_ids = []
+    endif
+
     return
+  endif
+
+  " kokomade
+  " 注釈から注釈に直接カーソル移動したとき、ウインドウをクリアしてから再描画する
+  if get(g:, 'annotation_window', v:false) && s:float_annotation != l:annotations[0].annotation
+    let s:float_annotation = l:annotations[0].annotation
   endif
 
   " for debug
   let g:annotation_show_floatwindow = v:true
-  if g:annotation_show_floatwindow == v:true
+  
+  if g:annotation_show_floatwindow == v:true && get(g:, 'annotation_window', v:true)
     call annotation#show_floatwindow(l:annotations[0].annotation)
     return
   endif
@@ -159,13 +175,14 @@ endfunction
 
 function! annotation#show_floatwindow(annotation) abort "{{{1
   let buf = nvim_create_buf(v:false, v:true)
-  call nvim_buf_set_lines(buf, 0, -1, v:true, [a:annotation, a:annotation])
-  let opts = {'relative': 'cursor', 'width': 10, 'height': 2, 'col': 0, 'row': 1, 'anchor': 'NW', 'style': 'minimal'}
+  call nvim_buf_set_lines(buf, 0, -1, v:true, ['title', a:annotation])
+  let opts = {'relative': 'cursor', 'width': 50, 'height': 4, 'col': 500, 'row': 0, 'anchor': 'NE', 'style': 'minimal'}
   let g:annotation_window = nvim_open_win(buf, 0, opts)
-  call nvim_win_set_option(g:annotation_window, 'winhl', 'Normal:MyHighlight')
+  call add(g:current_floatwindow_ids, g:annotation_window)
+  call nvim_win_set_option(g:annotation_window, 'winhl', 'Normal:AnnotationFloatHighlight')
+  echo g:current_floatwindow_ids
 endfunction
-" "}}}1
-
+"}}}1
 
 function! annotation#colorize() abort "{{{1
   let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
