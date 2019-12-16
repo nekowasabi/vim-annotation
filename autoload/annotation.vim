@@ -9,7 +9,7 @@ au CursorMoved,CursorMovedI * call s:cursor_waiting()
 au BufEnter,BufRead * call annotation#colorize()
 
 if !get(g:, 'show_annotation_update_timer', 0)
-  let g:show_annotation_update_timer = 1500 
+  let g:show_annotation_update_timer = 1000 
 endif
 
 let s:float_annotation = ''
@@ -142,17 +142,7 @@ function! s:show_annotation(timer_id) abort "{{{1
   let l:annotations = annotation#extract_by_annotation_settings(l:json)
 
   if empty(l:annotations)
-    if len(g:current_floatwindow_ids) != 0
-
-      for id in g:current_floatwindow_ids
-        if winbufnr(id) != -1
-          call nvim_win_close(id, v:true)
-        endif
-      endfor
-
-      let g:current_floatwindow_ids = []
-    endif
-
+    call annotation#clear_floatwindow(l:annotations)
     return
   endif
 
@@ -166,21 +156,34 @@ function! s:show_annotation(timer_id) abort "{{{1
   let g:annotation_show_floatwindow = v:true
   
   if g:annotation_show_floatwindow == v:true && get(g:, 'annotation_window', v:true)
-    call annotation#show_floatwindow(l:annotations[0].annotation)
+    call annotation#show_floatwindow(l:annotations[0])
     return
   endif
   echo l:annotations[0].annotation
 endfunction
 " }}}1
 
+function! annotation#clear_floatwindow(annotations) abort "{{{1
+  if len(g:current_floatwindow_ids) != 0
+
+    for id in g:current_floatwindow_ids
+      if winbufnr(id) != -1
+        call nvim_win_close(id, v:true)
+      endif
+    endfor
+
+    let g:current_floatwindow_ids = []
+  endif
+endfunction
+" }}}1
+
 function! annotation#show_floatwindow(annotation) abort "{{{1
   let buf = nvim_create_buf(v:false, v:true)
-  call nvim_buf_set_lines(buf, 0, -1, v:true, ['title', a:annotation])
+  call nvim_buf_set_lines(buf, 0, -1, v:true, ['Title: '.a:annotation.title, a:annotation.annotation, 'bbb', 'cccc', 'dddd'])
   let opts = {'relative': 'cursor', 'width': 50, 'height': 4, 'col': 500, 'row': 0, 'anchor': 'NE', 'style': 'minimal'}
   let g:annotation_window = nvim_open_win(buf, 0, opts)
   call add(g:current_floatwindow_ids, g:annotation_window)
   call nvim_win_set_option(g:annotation_window, 'winhl', 'Normal:AnnotationFloatHighlight')
-  echo g:current_floatwindow_ids
 endfunction
 "}}}1
 
