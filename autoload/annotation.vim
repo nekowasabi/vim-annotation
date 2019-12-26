@@ -7,6 +7,7 @@ let g:current_highlight_ids = []
 let g:current_floatwindow_ids = []
 au CursorMoved,CursorMovedI * call s:cursor_waiting()
 au BufEnter,BufRead * call annotation#colorize()
+au BufLeave,BufDelete * call annotation#clear_floatwindow()
 
 if !get(g:, 'show_annotation_update_timer', 0)
   let g:show_annotation_update_timer = 1000 
@@ -142,7 +143,7 @@ function! s:show_annotation(timer_id) abort "{{{1
   let l:annotations = annotation#extract_by_annotation_settings(l:json)
 
   if empty(l:annotations)
-    call annotation#clear_floatwindow(l:annotations)
+    call annotation#clear_floatwindow()
     return
   endif
 
@@ -163,7 +164,7 @@ function! s:show_annotation(timer_id) abort "{{{1
 endfunction
 " }}}1
 
-function! annotation#clear_floatwindow(annotations) abort "{{{1
+function! annotation#clear_floatwindow() abort "{{{1
   if len(g:current_floatwindow_ids) != 0
 
     for id in g:current_floatwindow_ids
@@ -179,13 +180,25 @@ endfunction
 
 function! annotation#show_floatwindow(annotation) abort "{{{1
   let buf = nvim_create_buf(v:false, v:true)
-  call nvim_buf_set_lines(buf, 0, -1, v:true, ['Title: '.a:annotation.title, a:annotation.annotation, 'bbb', 'cccc', 'dddd'])
+  call nvim_buf_set_lines(buf, 0, -1, v:true, annotation#generate_text(a:annotation))
   let opts = {'relative': 'cursor', 'width': 50, 'height': 4, 'col': 500, 'row': 0, 'anchor': 'NE', 'style': 'minimal'}
   let g:annotation_window = nvim_open_win(buf, 0, opts)
   call add(g:current_floatwindow_ids, g:annotation_window)
   call nvim_win_set_option(g:annotation_window, 'winhl', 'Normal:AnnotationFloatHighlight')
 endfunction
 "}}}1
+
+function annotation#generate_text(annotation) abort "{{{1
+  let s:text = []
+  call add(s:text, 'Titile: '.a:annotation.title)
+  call add(s:text, '')
+
+  let l:annotation = split(a:annotation.annotation, "\\\\r")
+  for a in l:annotation
+    call add(s:text, a)
+  endfor
+  return s:text
+endfunction " }}}
 
 function! annotation#colorize() abort "{{{1
   let l:json_path = g:annotation_cache_path. annotation#get_file_name() . '.json'
