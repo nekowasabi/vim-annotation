@@ -116,6 +116,9 @@ function! annotation#reflect_difference_to_json(diff, json_path) abort "{{{1
   let l:json = json_decode(readfile(a:json_path)[0])
   " ----- imakoko(現在行から↑にある注釈は無視する)
   let l:now_line = line('.')
+  " カーソルから上の行をフィルタリングする
+  " 変化がプラスかマイナスかで分岐
+  " mapで変化を反映させる
   if 0 < a:diff
     " echo '++++++++++++'
     for l:a in l:json['annotations']
