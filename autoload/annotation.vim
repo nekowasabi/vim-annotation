@@ -114,7 +114,26 @@ endfunction
 
 function! annotation#reflect_difference_to_json(diff, json_path) abort "{{{1
   let l:json = json_decode(readfile(a:json_path)[0])
-  call map(l:json['annotations'], 'extend(v:val, {"row": v:val.row + a:diff})')
+  " ----- imakoko(現在行から↑にある注釈は無視する)
+  let l:now_line = line('.')
+  if 0 < a:diff
+    " echo '++++++++++++'
+    for l:a in l:json['annotations']
+      " echo l:now_line . ' -- ' . l:a.row . ' -- ' . a:diff
+      if l:now_line < l:a.row + a:diff
+        call map(l:json['annotations'], 'extend(v:val, {"row": v:val.row + a:diff})')
+      endif
+    endfor
+  endif
+  if a:diff < 0
+    " echo '-----------'
+    for l:a in l:json['annotations']
+      echo l:now_line . ' -- ' . l:a.row . ' -- ' . a:diff
+      if l:now_line < l:a.row + a:diff
+        call map(l:json['annotations'], 'extend(v:val, {"row": v:val.row + a:diff})')
+      endif
+    endfor
+  endif
   return l:json
 endfunction
 " }}}1
@@ -160,7 +179,6 @@ function! s:show_annotation(timer_id) abort "{{{1
     call annotation#show_floatwindow(l:annotations[0])
     return
   endif
-  echo l:annotations[0].annotation
 endfunction
 " }}}1
 
